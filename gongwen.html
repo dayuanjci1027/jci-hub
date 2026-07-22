@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>大園青商 發公文</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#0097D7; --royal:#1F4789; --teal:#57BCBC; --gold:#EFC40F; --ink:#130F2D; --on-brand:#fff;
+  --bg:#EDF3F8; --surface:#FFFFFF; --surface2:#F2F7FB; --sunk:#E7F0F7;
+  --text:#130F2D; --muted:#5B6377; --faint:#8791A5; --line:#DBE5EF;
+  --shadow:0 1px 2px rgba(19,15,45,.05),0 6px 18px rgba(19,15,45,.07);
+}
+@media (prefers-color-scheme:dark){:root{
+  --brand:#33B1E6; --royal:#7C9BDD; --teal:#6FC9C9; --gold:#F2CE34; --ink:#0B0820; --on-brand:#0B0A22;
+  --bg:#130F2D; --surface:#1E1A42; --surface2:#262156; --sunk:#191540;
+  --text:#EEF1F8; --muted:#A29ECB; --faint:#726CA0; --line:#332C60;
+  --shadow:0 1px 2px rgba(0,0,0,.45);
+}}
+:root[data-theme="light"]{--brand:#0097D7;--royal:#1F4789;--ink:#130F2D;--on-brand:#fff;--bg:#EDF3F8;--surface:#FFFFFF;--surface2:#F2F7FB;--sunk:#E7F0F7;--text:#130F2D;--muted:#5B6377;--faint:#8791A5;--line:#DBE5EF;--shadow:0 1px 2px rgba(19,15,45,.05),0 6px 18px rgba(19,15,45,.07)}
+:root[data-theme="dark"]{--brand:#33B1E6;--royal:#7C9BDD;--ink:#0B0820;--on-brand:#0B0A22;--bg:#130F2D;--surface:#1E1A42;--surface2:#262156;--sunk:#191540;--text:#EEF1F8;--muted:#A29ECB;--faint:#726CA0;--line:#332C60;--shadow:0 1px 2px rgba(0,0,0,.45)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+#app{max-width:820px;margin:0 auto;padding:16px 14px 60px}
+button,select,input,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+select,input,textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;width:100%}
+textarea{resize:vertical;line-height:1.5}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.bar{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.bar .logo{width:34px;height:34px;border-radius:9px;background:var(--brand);color:var(--on-brand);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none}
+.bar h1{font-size:17px;margin:0;font-weight:800}
+.bar .sub{font-size:11.5px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:15px;margin-bottom:14px}
+.sec{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.12em;margin:2px 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:12px;color:var(--muted);font-weight:700}
+.f.full{grid-column:1 / -1}
+.btn{border:none;border-radius:11px;padding:10px 15px;font-size:14px;font-weight:800;background:var(--surface2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;width:auto}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.royal{background:var(--royal);color:#fff}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hint{font-size:11.5px;color:var(--faint);margin-top:2px}
+
+/* 公文 preview */
+.paper-wrap{overflow-x:auto}
+.paper{background:#fff;color:#111;width:794px;max-width:100%;margin:0 auto;padding:56px 64px 48px;font-family:"BiauKai","STKaiti","DFKai-SB","標楷體","PMingLiU",serif;font-size:17px;line-height:1.9;box-shadow:0 2px 16px rgba(0,0,0,.12)}
+.paper .top{text-align:right;font-size:13.5px;line-height:1.6;margin-bottom:18px}
+.paper .fld{display:flex;margin:1px 0}
+.paper .lb{white-space:nowrap;flex:none}
+.paper .vl{flex:1}
+.paper .exp{margin-left:0}
+.paper .exp .it{text-indent:0;padding-left:2.2em;text-indent:-1.4em;margin:1px 0}
+.paper .footnote{font-size:14px;margin-top:6px}
+.paper .cc{margin-top:22px}
+.paper .decision{margin-top:6px}
+.paper hr{border:none;border-top:1px solid #999;margin:14px 0}
+
+@media print{
+  body{background:#fff}
+  #app{max-width:none;padding:0}
+  .noprint{display:none !important}
+  .paper{box-shadow:none;width:auto;padding:0;margin:0}
+  .paper-wrap{overflow:visible}
+  @page{size:A4;margin:1.6cm 1.8cm}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="bar noprint">
+    <div class="logo">JCI</div>
+    <div><h1>發公文・開會通知</h1><div class="sub">大園青商 會務系統・填幾格即產出公文</div></div>
+  </div>
+
+  <div class="card noprint">
+    <div class="sec">會議資訊（改這幾格就好，其餘自動帶入）</div>
+    <div class="grid">
+      <div class="f"><label>會議類型</label>
+        <select id="mtype" onchange="deriveDates();autofill();render()">
+          <option>理事會</option><option>監事會</option><option>委員會</option><option>月例會</option><option>會員大會</option>
+        </select></div>
+      <div class="f"><label>第幾次</label><input id="session" type="number" min="1" value="8" oninput="autofill();render()"></div>
+      <div class="f"><label>開會日期</label><input id="mdate" type="date" onchange="deriveDates();render()"></div>
+      <div class="f"><label>開會時間</label><input id="mtime" type="time" value="19:30" onchange="render()"></div>
+      <div class="f full"><label>開會地點</label><input id="place" value="本會會館會議室" oninput="render()"></div>
+      <div class="f"><label>發文日期（自動：理監委 7 天前・會員大會 30 天前）</label><input id="fdate" type="date" onchange="render()"></div>
+      <div class="f"><label>提案截止日（預設開會前 3 天）</label><input id="ddate" type="date" onchange="render()"></div>
+      <div class="f"><label>屆數（阿拉伯）</label><input id="jie" value="41" oninput="autofill();render()"></div>
+      <div class="f"><label>屆數（國字，用於主旨）</label><input id="jiecn" value="卌一" oninput="autofill();render()"></div>
+      <div class="f"><label>發文序號</label><input id="seq" type="number" min="1" value="1" oninput="render()"></div>
+      <div class="f"><label>主席</label><input id="chair" value="曾聖富" oninput="render()"></div>
+      <div class="f full"><label>聯絡人／電話</label><input id="contact" value="吳瑞田  電話：0981-513-046" oninput="render()"></div>
+      <div class="f full"><label>受文者</label><input id="recv" oninput="render()"></div>
+      <div class="f full"><label>主旨</label><input id="subject" oninput="render()"></div>
+      <div class="f full"><label>應出席（自動取自 05 出席表・理事會/監事會）</label><textarea id="attend" rows="2" oninput="render()">曾會長聖富、許輔導會長俊民、許副會長政慶、許副會長宏霖、吳秘書長瑞田、羅財務長家明、李理事昀潔、徐理事睿亞、許理事哲維。</textarea></div>
+      <div class="f full"><label>應列席</label><textarea id="present" rows="1" oninput="render()">黃法制顧問駿晹、許常務監事育雯。</textarea></div>
+      <div class="f full"><label>說明（每行一項，日期會自動帶入第 2 項）</label><textarea id="notes" rows="4" oninput="render()"></textarea></div>
+      <div class="f full"><label>副本</label><input id="cc" value="桃園市政府社會局、青商總會、桃竹苗區會長 徐永興、西螺兄弟會、苗栗友好會" oninput="render()"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" onclick="window.print()">🖨 列印 / 存成 PDF</button>
+      <button class="btn royal" onclick="downloadWord()">⬇ 下載 Word（.doc）</button>
+      <button class="btn" onclick="syncMembers()">⟳ 從 05 出席表更新名單</button>
+      <button class="btn" onclick="autofill(true);render()">↺ 重設為預設</button>
+    </div>
+    <div class="hint">列印時選「另存為 PDF」就得到 PDF；下載 Word 可再編輯。公文以標楷體排版，實際字體以列印裝置為準。應出席名單自動取自「05-出席率統計・今年度」的職務＋姓名（隨理監事異動更新）。</div>
+  </div>
+
+  <div class="paper-wrap"><div class="paper" id="paper"></div></div>
+</div>
+
+<script>
+const ADDR='桃園市大園區新興路267之3號(4樓)';
+const EMAIL='dayuanjci1027@gmail.com';
+const SITE='https://www.jcidayuan.site/';
+const SHEET_ID='1DR0ja05ZJrERHR0WVxUR4m5mseDlTHXCA562glKJEmM';
+let MEMBERS = [{"role":"會長","n":"曾聖富"},{"role":"輔導會長","n":"許俊民"},{"role":"法制顧問","n":"黃駿晹"},{"role":"秘書長","n":"吳瑞田"},{"role":"財務長","n":"羅家明"},{"role":"常務監事","n":"許育雯"},{"role":"副會長","n":"許政慶"},{"role":"副會長","n":"許宏霖"},{"role":"理事","n":"李昀潔"},{"role":"理事","n":"徐睿亞"},{"role":"理事","n":"許哲維"},{"role":"監事","n":"沈寛亦"},{"role":"監事","n":"吳婉瑄"},{"role":"會員","n":"許常旭"},{"role":"會員","n":"洪千崴"},{"role":"會員","n":"林振暉"},{"role":"會員","n":"陳泓俞"},{"role":"會員","n":"簡帷芫"},{"role":"會員","n":"吳郁婷"},{"role":"會員","n":"黃柄捷"},{"role":"會員","n":"吳鼎鈞"},{"role":"會員","n":"王紹璿"},{"role":"會員","n":"游能翔"},{"role":"會員","n":"林詠玲"},{"role":"會員","n":"王良軒"},{"role":"會員","n":"毛清源"},{"role":"會員","n":"袁圳生"},{"role":"會員","n":"賴麗如"},{"role":"會員","n":"郭葳"},{"role":"會員","n":"游騰隆"},{"role":"會員","n":"陳星諭"},{"role":"會員","n":"王棋正"},{"role":"會員","n":"陳亮宇"},{"role":"見習會員","n":"蕭加恩"},{"role":"會員","n":"王意媗"},{"role":"見習會員","n":"鄭宇成"},{"role":"見習會員","n":"劉逸文"},{"role":"見習會員","n":"游崴宇"},{"role":"見習會員","n":"何柏融"},{"role":"見習會員","n":"許喬柔"}];
+const MEETING_ROLES={
+  理事會:{attend:['會長','輔導會長','副會長','秘書長','財務長','理事'],present:['法制顧問','常務監事']},
+  監事會:{attend:['常務監事','監事'],present:[]},
+  委員會:{attend:[],present:[]},
+  月例會:{attend:[],present:[]},
+  會員大會:{attend:[],present:[]}
+};
+function fmtName(role,n){ return n[0]+role+n.slice(1); }
+function genLists(type){
+  const cfg=MEETING_ROLES[type]; if(!cfg||!cfg.attend.length) return null;
+  const build=roles=>roles.flatMap(r=>MEMBERS.filter(m=>m.role===r).map(m=>fmtName(r,m.n)));
+  const a=build(cfg.attend), p=build(cfg.present);
+  return {attend:a.length?a.join('、')+'。':'', present:p.length?p.join('、')+'。':''};
+}
+function fdOffset(){ return document.getElementById('mtype').value==='會員大會'?30:7; }
+let toastTimer; function toast(m){ let t=document.getElementById('gwToast'); if(!t){t=document.createElement('div');t.id='gwToast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 17px;border-radius:12px;font-size:13px;font-weight:700;z-index:99;box-shadow:0 6px 20px rgba(0,0,0,.3)';document.body.appendChild(t);} t.textContent=m; t.style.opacity='1'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.opacity='0',2800); }
+function syncMembers(){
+  toast('連線 05 出席表…');
+  const cb='gwM_'+Date.now();
+  window[cb]=function(resp){
+    try{
+      const rows=resp.table.rows.map(r=>(r.c||[]).map(c=>c&&c.v!=null?String(c.v):''));
+      const out=[];
+      for(let i=3;i<rows.length;i++){ const role=(rows[i][0]||'').trim(), n=(rows[i][1]||'').trim(); if(n) out.push({role,n}); }
+      if(out.length){ MEMBERS=out; autofill(true); render(); toast('✓ 已更新名單（'+out.length+' 位）'); }
+      else toast('讀取成功但無資料列');
+    }catch(e){ toast('名單解析失敗'); }
+    delete window[cb];
+  };
+  const s=document.createElement('script');
+  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent('今年度')}&headers=0&tqx=out:json;responseHandler:${cb}&_=${Date.now()}`;
+  s.onerror=()=>toast('此環境擋外部連線，維持內建名單（本機/正式部署可更新）');
+  document.body.appendChild(s);
+}
+const CN=['零','一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四'];
+function cnInt(n){ if(n<0)return ''+n; if(n<=24)return CN[n]; const t=Math.floor(n/10),u=n%10; return (t>1?CN[t]:'')+'十'+(u?CN[u]:''); }
+function cnMinute(m){ return m===0?'整':(m<10?CN[m]:cnInt(m))+'分'; }
+function pad(n){ return String(n).padStart(2,'0'); }
+function wkday(d){ return '星期'+'日一二三四五六'[d.getDay()]; }
+function dInput(id){ const v=document.getElementById(id).value; if(!v)return null; const [y,m,dd]=v.split('-').map(Number); return new Date(y,m-1,dd); }
+function minguo(d){ return d.getFullYear()-1911; }
+function rocDate(d){ return `中華民國${minguo(d)}年${d.getMonth()+1}月${d.getDate()}日`; }
+function timeCN(hhmm){ const [h,m]=hhmm.split(':').map(Number); const ap=h<12?'上午':'下午'; const h12=h%12===0?12:h%12; return ap+cnInt(h12)+'時'+cnMinute(m); }
+
+function deriveDates(){
+  const md=dInput('mdate'); if(!md)return;
+  const f=new Date(md); f.setDate(f.getDate()-fdOffset());
+  const dd=new Date(md); dd.setDate(dd.getDate()-3);
+  const s=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+  if(!document.getElementById('fdate').value||document.getElementById('fdate').dataset.auto!=='0') { document.getElementById('fdate').value=s(f); }
+  if(!document.getElementById('ddate').value||document.getElementById('ddate').dataset.auto!=='0') { document.getElementById('ddate').value=s(dd); }
+  autofill();
+}
+document.getElementById('fdate').addEventListener('input',e=>e.target.dataset.auto='0');
+document.getElementById('ddate').addEventListener('input',e=>e.target.dataset.auto='0');
+
+function autofill(force){
+  const type=document.getElementById('mtype').value;
+  const sess=parseInt(document.getElementById('session').value)||1;
+  const jie=document.getElementById('jie').value;
+  const jiecn=document.getElementById('jiecn').value;
+  const md=dInput('mdate'); const year=md?md.getFullYear():2026; const roc=md?minguo(md):115;
+  const recvMap={理事會:`本會${jie}屆全體理事成員`,監事會:`本會${jie}屆全體監事成員`,委員會:`本會${jie}屆各委員會主任委員`,月例會:`本會${jie}屆全體會員`,會員大會:`本會${jie}屆全體會員`};
+  const meetName={理事會:'理事會議',監事會:'監事會議',委員會:'委員會議',月例會:`${md?md.getMonth()+1:''}月份月例會`,會員大會:'會員大會'};
+  const subj = type==='月例會'
+    ? `函請出(列)席${year}年第${jiecn}屆(${roc}年度)${meetName[type]}`
+    : `函請出(列)席${year}年第${jiecn}屆(${roc}年度)第${cnInt(sess)}次${meetName[type]}`;
+  const recvEl=document.getElementById('recv'), subjEl=document.getElementById('subject');
+  if(force||!recvEl.value||recvEl.dataset.auto!=='0') { recvEl.value=recvMap[type]; recvEl.dataset.auto='1'; }
+  if(force||!subjEl.value||subjEl.dataset.auto!=='0') { subjEl.value=subj; subjEl.dataset.auto='1'; }
+  // notes default (line 2 date auto)
+  const notesEl=document.getElementById('notes');
+  if(force||!notesEl.value||notesEl.dataset.auto!=='0'){
+    const dd=dInput('ddate');
+    const ddStr = dd?`${minguo(dd)}年${dd.getMonth()+1}月${dd.getDate()}日`:'開會前三日';
+    const roleWord = type==='監事會'?'監事':'理事';
+    notesEl.value=[
+      `敬請各位${roleWord}成員務必準時出席，請著正式服裝。`,
+      `各位${roleWord}若有提案請於${ddStr}前與秘書處聯絡，以利彙整。`,
+      `敬請各位委員會主委如有工作計畫說明務必準時出席。`,
+      `敬請全體會友、見習會友踴躍列席參加。`
+    ].join('\n');
+    notesEl.dataset.auto='1';
+  }
+  // 應出席/應列席：自動取自 05 出席表（理事會/監事會）
+  const lists=genLists(type);
+  const atEl=document.getElementById('attend'), prEl=document.getElementById('present');
+  if(lists){
+    if(force||atEl.dataset.auto!=='0'){ atEl.value=lists.attend; atEl.dataset.auto='1'; }
+    if(force||prEl.dataset.auto!=='0'){ prEl.value=lists.present; prEl.dataset.auto='1'; }
+  }
+}
+['recv','subject','notes','attend','present'].forEach(id=>document.getElementById(id).addEventListener('input',e=>e.target.dataset.auto='0'));
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function buildHTML(){
+  const md=dInput('mdate'), fd=dInput('fdate');
+  const seq=pad(parseInt(document.getElementById('seq').value)||1).padStart(3,'0');
+  const wenhaoNum = fd?`${minguo(fd)}${pad(fd.getMonth()+1)}${pad(fd.getDate())}${String(parseInt(document.getElementById('seq').value)||1).padStart(3,'0')}`:'—';
+  const wenhao = fd?`(${minguo(fd)})大青祕發字第${wenhaoNum}號`:'（請先填發文日期）';
+  const timeLine = md?`${minguo(md)}年${md.getMonth()+1}月${md.getDate()}日(${wkday(md)})${timeCN(document.getElementById('mtime').value)}`:'（請先填開會日期）';
+  const g=id=>esc(document.getElementById(id).value);
+  const notes=document.getElementById('notes').value.split('\n').filter(x=>x.trim());
+  const notesHTML=notes.map((n,i)=>`<div class="it">${i+1}. ${esc(n)}</div>`).join('');
+  const L=(lb,vl)=>`<div class="fld"><span class="lb">${lb}：</span><span class="vl">${vl}</span></div>`;
+  return `
+    <div class="top">地　　址：${ADDR}<br>E - mail：${EMAIL}</div>
+    ${L('受文者', g('recv'))}
+    ${L('發文日期', fd?rocDate(fd):'（請先填發文日期）')}
+    ${L('發文字號', wenhao)}
+    ${L('速別','普通')}
+    ${L('秘等及解秘條件','普通')}
+    ${L('附件','')}
+    ${L('主　旨', g('subject'))}
+    ${L('時　間', timeLine)}
+    ${L('地　點', g('place'))}
+    ${L('主　席', g('chair'))}
+    ${L('聯絡人', g('contact'))}
+    ${L('應出席', g('attend'))}
+    ${L('應列席', g('present'))}
+    <div class="fld"><span class="lb">說　明：</span></div>
+    <div class="exp">${notesHTML}</div>
+    <div class="footnote">＊本會相關活動及行程敬請參閱本會官方網站(${SITE})</div>
+    <div class="footnote">　及 LINE(會務佈告欄)訊息</div>
+    <div class="cc">${L('正本','如受文者')}${L('副本', g('cc'))}</div>
+    <div class="decision">本案依權責劃分規定授權業務主管決行</div>
+  `;
+}
+function render(){ document.getElementById('paper').innerHTML=buildHTML(); }
+
+function downloadWord(){
+  const inner=document.getElementById('paper').innerHTML;
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">
+  <style>@page{size:A4;margin:1.6cm 1.8cm} body{font-family:"標楷體","BiauKai",serif;font-size:14pt;line-height:1.9} .top{text-align:right;font-size:11pt} .fld{margin:1px 0} .exp .it{padding-left:2.2em;text-indent:-1.4em} .footnote{font-size:11pt} .cc{margin-top:18pt}</style></head>
+  <body>${inner}</body></html>`;
+  const md=dInput('mdate');
+  const name=`大園青商公文_${document.getElementById('mtype').value}_${md?minguo(md)+'年'+(md.getMonth()+1)+'月':'草稿'}.doc`;
+  const blob=new Blob(['﻿'+html],{type:'application/msword'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+}
+
+/* 初始化：預設帶入下一場理事會（開會日 = 兩週後的週三示範） */
+(function init(){
+  const t=new Date(); t.setDate(t.getDate()+14);
+  document.getElementById('mdate').value=`${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+  deriveDates(); autofill(true); render();
+})();
+</script>
+
+</body>
+</html>

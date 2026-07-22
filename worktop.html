@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>大園青商・會務系統</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --blue:#14508F; --blue-deep:#0C3B6E; --gold:#C39B2D; --on-blue:#FFFFFF;
+  --bg:#EFF3F8; --surface:#FFFFFF; --surface2:#F6F9FC;
+  --text:#1B2836; --muted:#5B6B7E; --line:#DCE4EE;
+  --ok:#188A54; --ok-bg:#E3F4EC; --warn:#B26A08; --warn-bg:#FBF0DC;
+  --bad:#C7362F; --bad-bg:#FBE7E5; --info:#14508F; --info-bg:#E5EEF8;
+  --plan:#8A5FBF; --plan-bg:#F0E9F8;
+  --shadow:0 1px 3px rgba(16,37,66,.08),0 4px 14px rgba(16,37,66,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --blue:#5C97D8; --blue-deep:#7FB0E4; --gold:#D4B155; --on-blue:#0D1420;
+    --bg:#0D1420; --surface:#17212F; --surface2:#1E2A3B;
+    --text:#E8EEF6; --muted:#93A3B8; --line:#28374B;
+    --ok:#4CC08D; --ok-bg:#152E24; --warn:#E5A33C; --warn-bg:#332816;
+    --bad:#E5645C; --bad-bg:#361B1B; --info:#6FA6E0; --info-bg:#1B2C42;
+    --plan:#B593E0; --plan-bg:#2A2138;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="light"]{
+  --blue:#14508F; --blue-deep:#0C3B6E; --gold:#C39B2D; --on-blue:#FFFFFF;
+  --bg:#EFF3F8; --surface:#FFFFFF; --surface2:#F6F9FC;
+  --text:#1B2836; --muted:#5B6B7E; --line:#DCE4EE;
+  --ok:#188A54; --ok-bg:#E3F4EC; --warn:#B26A08; --warn-bg:#FBF0DC;
+  --bad:#C7362F; --bad-bg:#FBE7E5; --info:#14508F; --info-bg:#E5EEF8;
+  --plan:#8A5FBF; --plan-bg:#F0E9F8;
+  --shadow:0 1px 3px rgba(16,37,66,.08),0 4px 14px rgba(16,37,66,.06);
+}
+:root[data-theme="dark"]{
+  --blue:#5C97D8; --blue-deep:#7FB0E4; --gold:#D4B155; --on-blue:#0D1420;
+  --bg:#0D1420; --surface:#17212F; --surface2:#1E2A3B;
+  --text:#E8EEF6; --muted:#93A3B8; --line:#28374B;
+  --ok:#4CC08D; --ok-bg:#152E24; --warn:#E5A33C; --warn-bg:#332816;
+  --bad:#E5645C; --bad-bg:#361B1B; --info:#6FA6E0; --info-bg:#1B2C42;
+  --plan:#B593E0; --plan-bg:#2A2138;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:14.5px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+#shell{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:76px}
+a{color:var(--blue)}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ── App bar ── */
+.appbar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:2px solid var(--gold);padding:12px 16px 10px;display:flex;align-items:center;gap:10px}
+.appbar .mark{width:34px;height:34px;border-radius:9px;background:var(--blue);color:var(--on-blue);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.02em;flex:none}
+.appbar h1{font-size:16.5px;margin:0;font-weight:700;letter-spacing:.01em}
+.appbar .sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.appbar .spacer{flex:1}
+.iconbtn{background:none;border:none;color:var(--muted);padding:6px;border-radius:9px;display:flex}
+.iconbtn:active{background:var(--surface2)}
+
+/* ── Tab bar ── */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;background:none;border:none;color:var(--muted);padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;letter-spacing:.06em}
+.tab svg{width:21px;height:21px}
+.tab.on{color:var(--blue);font-weight:700}
+.tab .bdg{position:absolute;margin-left:22px;margin-top:-2px;background:var(--bad);color:#fff;border-radius:8px;font-size:9.5px;min-width:15px;height:15px;line-height:15px;text-align:center;font-weight:700;padding:0 3px}
+
+/* ── Layout blocks ── */
+.view{display:none;padding:14px 14px 10px;animation:fade .18s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view{animation:none}.panel{transition:none !important}}
+.sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.14em;margin:18px 2px 8px;display:flex;align-items:center;gap:8px}
+.sec:first-child{margin-top:2px}
+.sec .n{background:var(--info-bg);color:var(--info);border-radius:8px;padding:0 7px;font-size:11px;letter-spacing:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 14px;margin-bottom:10px}
+.card.flat{box-shadow:none}
+.row{display:flex;align-items:center;gap:10px}
+.row .grow{flex:1;min-width:0}
+.title{font-weight:700;font-size:15px}
+.meta{font-size:12.5px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── Chips ── */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;letter-spacing:.03em;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.info{background:var(--info-bg);color:var(--info)}
+.chip.plan{background:var(--plan-bg);color:var(--plan)}
+.chip.gold{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.chip.line{background:transparent;color:var(--muted);border:1px solid var(--line)}
+
+/* ── Buttons ── */
+.btn{border:none;border-radius:11px;padding:10px 14px;font-size:14px;font-weight:700;background:var(--surface2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--blue);color:var(--on-blue)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--blue)}
+.btn.small{padding:6px 11px;font-size:12.5px;border-radius:9px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* ── Todo list ── */
+.todo{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+.todo:last-child{border-bottom:none}
+.todo input[type=checkbox]{width:19px;height:19px;margin-top:2px;accent-color:var(--blue);flex:none}
+.todo.done .t{text-decoration:line-through;color:var(--muted)}
+.todo .t{font-size:14px;font-weight:600}
+.todo .d{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* ── Quick grid ── */
+.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.qbtn{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:11px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;color:var(--text);text-decoration:none;font-weight:600;box-shadow:var(--shadow)}
+.qbtn svg{width:22px;height:22px;color:var(--blue)}
+
+/* ── Checklist (SOP) ── */
+.ck{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.ck:last-child{border-bottom:none}
+.ck input{width:18px;height:18px;margin-top:2px;accent-color:var(--ok);flex:none}
+.ck.done label{text-decoration:line-through;color:var(--muted)}
+.ck label{flex:1;font-size:13.5px}
+.prog{height:7px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.prog>i{display:block;height:100%;background:var(--ok);border-radius:6px;transition:width .25s}
+.prog.blue>i{background:var(--blue)}
+
+/* ── Members ── */
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--info-bg);color:var(--blue);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.avatar.tr{background:var(--warn-bg);color:var(--warn)}
+.seg{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;margin-bottom:10px}
+.seg button{flex:1;border:none;background:none;padding:7px 2px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--blue);box-shadow:var(--shadow);font-weight:700}
+.search{width:100%;margin-bottom:10px}
+
+/* ── Pipeline / timeline ── */
+.pipe{display:flex;flex-direction:column;gap:0;margin-top:8px}
+.pstep{display:flex;gap:10px}
+.pstep .dot{width:22px;display:flex;flex-direction:column;align-items:center;flex:none}
+.pstep .dot i{width:12px;height:12px;border-radius:50%;background:var(--line);border:2px solid var(--line);flex:none;margin-top:3px}
+.pstep .dot b{width:2px;flex:1;background:var(--line)}
+.pstep:last-child .dot b{display:none}
+.pstep.done .dot i{background:var(--ok);border-color:var(--ok)}
+.pstep.now .dot i{background:var(--surface);border-color:var(--blue);box-shadow:0 0 0 3px var(--info-bg)}
+.pstep .pc{padding-bottom:12px;flex:1;min-width:0}
+.pstep .pt{font-size:13.5px;font-weight:650}
+.pstep.done .pt{color:var(--muted)}
+.pstep .pd{font-size:12px;color:var(--muted)}
+
+/* ── Detail panel ── */
+.panel{position:fixed;inset:0;z-index:40;background:var(--bg);max-width:480px;margin:0 auto;transform:translateX(102%);transition:transform .22s ease;overflow-y:auto;padding-bottom:30px}
+.panel.on{transform:none}
+.panel .phead{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:5}
+.panel .phead h2{font-size:15.5px;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel .pbody{padding:14px}
+
+/* ── Misc ── */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.kpi .v{font-size:20px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+.kpi .k{font-size:11px;color:var(--muted);letter-spacing:.08em;margin-top:1px}
+.note{background:var(--surface2);border:1px dashed var(--line);border-radius:11px;padding:9px 11px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;max-width:88%;text-align:center;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.linkrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+.linkrow:last-child{border-bottom:none}
+.linkrow .ic{width:34px;height:34px;border-radius:9px;background:var(--info-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 0}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 0}
+.addform{display:none;gap:8px;margin-top:10px;flex-direction:column}
+.addform.on{display:flex}
+.mini{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="shell">
+  <header class="appbar">
+    <div class="mark">JCI</div>
+    <div>
+      <h1>大園青商 會務系統</h1>
+      <div class="sub">2026 年度・秘書處 <span id="todayStr" class="num"></span></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" onclick="showView('more')" aria-label="更多與設定">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <!-- ═══ 首頁 ═══ -->
+  <section class="view" id="view-home">
+    <div class="kpis" id="homeKpis"></div>
+
+    <div class="sec">今日待辦 <span class="n" id="todoCount"></span></div>
+    <div class="card" id="todoList"></div>
+    <div class="legend">
+      <span class="chip ok">自動：系統代勞</span>
+      <span class="chip info">一鍵：按一下完成</span>
+      <span class="chip plan">規劃中：待串接</span>
+      <span class="chip line">手動</span>
+    </div>
+
+    <div class="sec">快速功能</div>
+    <div class="qgrid" id="quickGrid"></div>
+
+    <div class="sec">近期行事曆</div>
+    <div class="card" id="homeCal"></div>
+  </section>
+
+  <!-- ═══ 會議 ═══ -->
+  <section class="view" id="view-meetings">
+    <div class="sec">即將召開</div>
+    <div id="meetUpcoming"></div>
+    <div class="sec">已結束（決議追蹤）</div>
+    <div id="meetPast"></div>
+  </section>
+
+  <!-- ═══ 會員 ═══ -->
+  <section class="view" id="view-members">
+    <div class="seg" id="memSeg">
+      <button data-f="all" class="on">全部</button>
+      <button data-f="member">正式</button>
+      <button data-f="trainee">見習</button>
+      <button data-f="unpaid">未繳費</button>
+    </div>
+    <input class="search" id="memSearch" placeholder="搜尋姓名或職稱…" oninput="renderMembers()">
+    <div id="traineeArea"></div>
+    <div id="memberList"></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="syncRoster()">⟳ 同步 02-會員名冊</button>
+      <button class="btn ghost" onclick="toggleForm('guestForm')">＋ 新增來賓／見習</button>
+    </div>
+    <div class="addform card" id="guestForm">
+      <input id="gName" placeholder="來賓姓名">
+      <input id="gInviter" placeholder="邀約人（輔導理事）">
+      <button class="btn primary" onclick="addGuest()">建立並取得見習申請表連結</button>
+      <div class="mini">建立後：把申請表連結傳給邀約人 → 來賓填表 → 排入理事會決議。</div>
+    </div>
+  </section>
+
+  <!-- ═══ 活動 ═══ -->
+  <section class="view" id="view-events">
+    <div class="sec">報名中（取代 LINE 接龍）</div>
+    <div id="eventOpen"></div>
+    <div class="sec">籌備中／已排定</div>
+    <div id="eventPlanned"></div>
+    <button class="btn ghost wide" onclick="toggleForm('eventForm')">＋ 新增活動（決議通過後）</button>
+    <div class="addform card" id="eventForm">
+      <input id="evName" placeholder="活動名稱">
+      <div class="row"><input id="evDate" type="date" style="flex:1"><input id="evCap" type="number" placeholder="人數上限" style="width:110px"></div>
+      <input id="evPlace" placeholder="地點">
+      <button class="btn primary" onclick="addEvent()">建立活動</button>
+      <div class="mini">建立後自動：產生報名頁按鈕、排入行事曆（規劃中）、排程前 3 天出席提醒。</div>
+    </div>
+  </section>
+
+  <!-- ═══ 公文 ═══ -->
+  <section class="view" id="view-docs">
+    <div class="sec">公文時程規則</div>
+    <div class="card flat" style="font-size:12.5px;color:var(--muted)">
+      理事會／監事會／委員會：<b class="num" style="color:var(--text)">7 天前</b> 電子公文<br>
+      會員大會：<b class="num" style="color:var(--text)">35 天前</b> 電子公文、<b class="num" style="color:var(--text)">30 天前</b> Line@ 推播＋郵寄<br>
+      <span class="chip ok" style="margin-top:6px">已自動：公文儲存至雲端</span>
+    </div>
+    <div class="sec">進行中</div>
+    <div id="docActive"></div>
+    <div class="sec">已完成歸檔</div>
+    <div id="docDone"></div>
+  </section>
+
+  <!-- ═══ 更多 ═══ -->
+  <section class="view" id="view-more">
+    <div class="sec">自動化中心</div>
+    <div class="card" id="autoCenter"></div>
+    <div class="sec">常用工具連結</div>
+    <div class="card" id="toolLinks"></div>
+    <div class="sec">LINE 群組地圖</div>
+    <div class="card" id="lineMap"></div>
+    <div class="sec">關於</div>
+    <div class="card flat meta">
+      大園國際青年商會 會務管理系統・介面原型 v1<br>
+      入口設計：LINE@ 圖文選單按鈕 → 開啟本系統（手機優先）。<br>
+      目前為前端示意（資料為範例），正式版由 Google Apps Script ＋ 試算表驅動。
+      <div class="btnrow"><button class="btn small ghost" onclick="resetAll()">重設示範資料</button></div>
+    </div>
+  </section>
+
+  <!-- 詳情面板 -->
+  <div class="panel" id="panel">
+    <div class="phead">
+      <button class="iconbtn" onclick="closePanel()" aria-label="返回">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h2 id="panelTitle"></h2>
+    </div>
+    <div class="pbody" id="panelBody"></div>
+  </div>
+
+  <nav class="tabbar">
+    <button class="tab on" data-v="home" onclick="showView('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>首頁</button>
+    <button class="tab" data-v="meetings" onclick="showView('meetings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18M9 15.5l2 2 4-4"/></svg>會議</button>
+    <button class="tab" data-v="members" onclick="showView('members')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/><circle cx="17.5" cy="9.5" r="2.5"/><path d="M16.5 15.2c2.6.3 4.4 1.7 5 4.3"/></svg>會員</button>
+    <button class="tab" data-v="events" onclick="showView('events')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v5a2.5 2.5 0 0 0 0 5v5H4v-5a2.5 2.5 0 0 0 0-5z"/><path d="M12 4v3m0 4v2m0 4v3"/></svg>活動</button>
+    <button class="tab" data-v="docs" onclick="showView('docs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h7"/></svg>公文</button>
+  </nav>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ══════════ 資料（示範，可重設） ══════════ */
+const LINKS = {
+  checkin:'https://dayuanjci1027.github.io/jci-checkin/',
+  roster:'https://docs.google.com/spreadsheets/d/1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y',
+  attendance:'https://docs.google.com/spreadsheets/d/1DR0ja05ZJrERHR0WVxUR4m5mseDlTHXCA562glKJEmM',
+  docTpl:'https://docs.google.com/document/d/1HFHQpmM_wT4oUggymeL2tbLYjBy27CT6xbZVLBMESqU',
+  agendaTpl:'https://docs.google.com/document/d/1jHMxjTmHMrFjhhb87Pkb29TMpMf-dvYwby-cHLpqJsI',
+  traineeForm:'https://forms.gle/sTup1SxihyDwnDLZA',
+  guideWhat:'https://heyzine.com/flip-book/0a64219926.html',
+  guideNew:'https://heyzine.com/flip-book/b0dbab7f5c.html',
+  site:'https://www.jcidayuan.site/',
+  applyView:'https://script.google.com/macros/s/AKfycbxrHVW9PUjfy73QAsyYvFU1fQrJC2AqZ_OKuTHGTKwKOXN7KVZcJ2S2Qn01Ci5N0BhMTA/exec'
+};
+
+const SEED = {
+  members:[
+    {n:'陳志豪', role:'會長', rep:1, paid:1},
+    {n:'林建宏', role:'秘書長', rep:1, paid:1},
+    {n:'張雅雯', role:'財務長', rep:1, paid:1},
+    {n:'黃俊凱', role:'副會長', rep:1, paid:1},
+    {n:'吳佩珊', role:'活動主委', rep:0, paid:1},
+    {n:'劉冠廷', role:'理事', rep:1, paid:0},
+    {n:'蔡欣怡', role:'監事', rep:0, paid:1},
+    {n:'鄭文豪', role:'理事', rep:1, paid:1},
+    {n:'許家瑜', role:'會員擴展主委', rep:0, paid:0},
+    {n:'楊承翰', role:'會員', rep:0, paid:1}
+  ],
+  trainees:[
+    {n:'王小明', stage:'met',   inviter:'吳佩珊', since:'2026-03-17', board:2, monthly:2},
+    {n:'李佳穎', stage:'attend',inviter:'劉冠廷', since:'2026-05-19', board:1, monthly:1},
+    {n:'張大衛', stage:'guest', inviter:'陳志豪', since:'2026-07-06', board:0, monthly:0}
+  ],
+  meetings:[
+    {id:'m7',  type:'理事會', name:'第七次理事會', date:'2026-07-21', time:'19:30', place:'大園青商會館', duty:'吳佩珊',
+      agenda:[
+        {t:'審查六月份財務報表', by:'財務長', src:'例行'},
+        {t:'家庭日烤肉聯誼活動企劃暨預算案', by:'活動總幹事', src:'活動'},
+        {t:'見習會員 王小明 轉正式會員案', by:'秘書處', src:'系統帶入'}
+      ],
+      lastYear:['審查財務報表','中秋節聯誼活動籌備案','總會年會報名補助案']},
+    {id:'m7m', type:'月例會', name:'七月份月例會', date:'2026-07-28', time:'19:00', place:'大園青商會館', duty:'', agenda:[], lastYear:[]},
+    {id:'ga2', type:'會員大會', name:'第二次會員大會', date:'2026-08-22', time:'18:00', place:'田園海鮮餐廳', duty:'', agenda:[], lastYear:[]},
+    {id:'m6',  type:'理事會', name:'第六次理事會', date:'2026-06-16', time:'19:30', place:'大園青商會館', done:1,
+      att:{p:18,t:22},
+      resolutions:[
+        {t:'通過六月份財務報表', st:'done'},
+        {t:'通過家庭日烤肉聯誼活動，預算 35,000 元', st:'doing'},
+        {t:'七月份值日生：吳佩珊', st:'done', duty:1},
+        {t:'桃竹苗區聯合月例會 本會出席 10 名', st:'todo'}
+      ]}
+  ],
+  events:[
+    {id:'e1', name:'家庭日烤肉聯誼', kind:'會內', date:'2026-08-09', place:'埔心牧場', deadline:'2026-08-01', cap:40, tf:'吳佩珊',
+      signed:['陳志豪','張雅雯','黃俊凱','吳佩珊','鄭文豪','許家瑜','楊承翰','蔡欣怡'], plan:1, prep:1, passed:1},
+    {id:'e2', name:'桃竹苗區聯合月例會', kind:'會外', date:'2026-09-12', place:'新竹煙波飯店', deadline:'2026-08-30', cap:10, tf:'黃俊凱',
+      signed:['陳志豪','林建宏'], plan:1, prep:0, passed:1},
+    {id:'e3', name:'交接典禮', kind:'會內', date:'2026-12-25', place:'未定', deadline:'', cap:0, tf:'待指派', signed:[], plan:0, prep:0, passed:0}
+  ],
+  docs:[
+    {id:'d1', name:'第七次理事會 開會通知', due:'2026-07-14', mail:0, step:0},
+    {id:'d2', name:'第二次會員大會 召開公文', due:'2026-07-18', mailDue:'2026-07-23', mail:1, step:0},
+    {id:'d3', name:'第六次理事會 開會通知', due:'2026-06-09', mail:0, step:99}
+  ],
+  checks:{}, todoDone:{}
+};
+
+const KEY='jci-oms-v1';
+let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ S=null; }
+if(!S) S = JSON.parse(JSON.stringify(SEED));
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function resetAll(){ localStorage.removeItem(KEY); S = JSON.parse(JSON.stringify(SEED)); renderAll(); toast('已重設示範資料'); }
+
+/* ══════════ 日期工具 ══════════ */
+const today = new Date(); today.setHours(0,0,0,0);
+function D(s){ const [y,m,dd]=s.split('-').map(Number); return new Date(y,m-1,dd); }
+function diff(s){ return Math.round((D(s)-today)/864e5); }
+function fmt(s){ const t=D(s); return `${t.getMonth()+1}/${t.getDate()}（${'日一二三四五六'[t.getDay()]}）`; }
+function dueChip(n){
+  if(n<0)  return `<span class="chip bad num">逾期 ${-n} 天</span>`;
+  if(n===0)return `<span class="chip bad">今天</span>`;
+  if(n===1)return `<span class="chip warn">明天</span>`;
+  if(n<=7) return `<span class="chip warn num">${n} 天後</span>`;
+  return `<span class="chip line num">${n} 天後</span>`;
+}
+document.getElementById('todayStr').textContent = `・今天 ${today.getMonth()+1}/${today.getDate()}`;
+
+/* ══════════ SOP 範本（依 PDF 工作流） ══════════ */
+/* tag: auto=已自動 / sys=系統代勞 / one=一鍵 / plan=規劃中 / man=手動 */
+const SOP = {
+  pre:[
+    {t:'製作開會公文（套範本）', tag:'one', link:'docTpl'},
+    {t:'確認理監事及與會來賓名單', tag:'man'},
+    {t:'擬訂議程（宣讀前次決議＋本次案由）', tag:'one', link:'agendaTpl'},
+    {t:'公文校稿', tag:'man'},
+    {t:'Line@ 公文推播', tag:'plan'},
+    {t:'上傳公文圖片至 LINE 會務大群', tag:'plan'},
+    {t:'儲存公文至雲端', tag:'auto'},
+    {t:'印製會議議程文件', tag:'man'},
+    {t:'製作理監事及來賓桌牌（Canva）', tag:'one'},
+    {t:'準備來賓禮品（會刊＋小會旗）', tag:'man'},
+    {t:'確認場地設備（燈光、投影、冷氣）', tag:'man'},
+    {t:'設定 LED 跑馬燈', tag:'man'},
+    {t:'開啟簽到系統／自助報到', tag:'one', link:'checkin'}
+  ],
+  mid:[
+    {t:'會議司儀（宣讀前次決議、本次議程）', tag:'man'},
+    {t:'會議記錄（本次決議、臨時動議）', tag:'man'},
+    {t:'簽到統計出席率', tag:'plan', note:'簽到 csv → 05-出席率管理 自動匯入'},
+    {t:'追蹤決議案由', tag:'sys'}
+  ],
+  post:[
+    {t:'整理會議記錄', tag:'man'},
+    {t:'決議文上傳 LINE 會務大群相簿', tag:'plan'},
+    {t:'提醒財務長：財報簽核後拍照', tag:'sys'},
+    {t:'出席率統計入 05-出席率管理', tag:'plan'},
+    {t:'會議照片上傳相簿', tag:'man'},
+    {t:'決議執行情形追蹤製表', tag:'sys'}
+  ],
+  gaExtra:[
+    {t:'35 天前：製作會員大會電子公文', tag:'one'},
+    {t:'30 天前：Line@ 公文推播', tag:'plan'},
+    {t:'30 天前：列印公文＋郵寄標籤＋裝袋寄送', tag:'one', note:'標籤產生器一鍵產出'},
+    {t:'編輯會員大會手冊、列印裝訂', tag:'man'}
+  ]
+};
+const TAGCHIP = {auto:'<span class="chip ok">已自動</span>', sys:'<span class="chip ok">系統</span>', one:'<span class="chip info">一鍵</span>', plan:'<span class="chip plan">規劃中</span>', man:'<span class="chip line">手動</span>'};
+
+/* ══════════ 待辦引擎 ══════════ */
+function buildTodos(){
+  const T=[];
+  S.docs.forEach(d=>{
+    if(d.step>=99) return;
+    T.push({id:'doc-'+d.id, due:d.due, t:`製作「${d.name}」`, d:(d.mail?'會員大會 35 天前規則':'會議 7 天前規則'), tag:'one', go:'docs'});
+    if(d.mailDue) T.push({id:'mail-'+d.id, due:d.mailDue, t:`公文郵寄＋Line@ 推播（${d.name}）`, d:'30 天前規則・標籤產生器', tag:'one', go:'docs'});
+  });
+  S.meetings.filter(m=>!m.done).forEach(m=>{
+    const eve = new Date(D(m.date)-864e5), es = `${eve.getFullYear()}-${String(eve.getMonth()+1).padStart(2,'0')}-${String(eve.getDate()).padStart(2,'0')}`;
+    if(m.duty) T.push({id:'duty-'+m.id, due:es, t:`提醒值日生 ${m.duty} 提早到`, d:`${m.name} 前一天・值日生由上次決議自動帶入`, tag:'sys', go:'meetings'});
+    if(m.type==='理事會') T.push({id:'agn-'+m.id, due:m.date, t:`確認「${m.name}」案由（比對去年同期）`, d:'月初對 07-工作財務計劃表', tag:'sys', go:'meetings'});
+  });
+  S.events.forEach(e=>{
+    if(diff(e.date)<0) return;
+    if(e.passed){
+      const r3 = new Date(D(e.date)-3*864e5);
+      T.push({id:'ev3-'+e.id, due:`${r3.getFullYear()}-${String(r3.getMonth()+1).padStart(2,'0')}-${String(r3.getDate()).padStart(2,'0')}`, t:`活動前 3 天提醒出席（${e.name}）`, d:'LINE 群組提醒應出席成員', tag:'plan', go:'events'});
+    }
+    if(!e.plan && diff(e.date)<=75) T.push({id:'evp-'+e.id, due:todayStr(), t:`提醒 ${e.tf}：撰寫「${e.name}」企劃書、開籌備會`, d:'活動 2 個月前規則', tag:'sys', go:'events'});
+  });
+  S.trainees.forEach(tr=>{
+    if(tr.stage==='met') T.push({id:'tr-'+tr.n, due:todayStr(), t:`見習 ${tr.n} 出席條件達成 → 排入理事會轉正`, d:'系統自動偵測出席 2 次理事會＋月例會', tag:'sys', go:'members'});
+    if(tr.stage==='guest') T.push({id:'trg-'+tr.n, due:todayStr(), t:`向 ${tr.inviter} 確認來賓 ${tr.n} 已填見習申請表`, d:'申請表連結可一鍵傳送', tag:'one', go:'members'});
+  });
+  T.sort((a,b)=> D(a.due)-D(b.due));
+  return T.filter(x=> diff(x.due) <= 21);
+}
+function todayStr(){ return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`; }
+
+/* ══════════ 渲染：首頁 ══════════ */
+function renderHome(){
+  const todos = buildTodos();
+  const open = todos.filter(t=>!S.todoDone[t.id]);
+  document.getElementById('todoCount').textContent = `${open.length} 項`;
+  const kp = [
+    {v:S.members.length, k:'正式會員'},
+    {v:S.trainees.length, k:'見習・來賓'},
+    {v:open.length, k:'待辦事項'}
+  ];
+  document.getElementById('homeKpis').innerHTML = kp.map(x=>`<div class="kpi"><div class="v num">${x.v}</div><div class="k">${x.k}</div></div>`).join('');
+
+  document.getElementById('todoList').innerHTML = todos.length ? todos.map(t=>{
+    const done = !!S.todoDone[t.id];
+    return `<div class="todo ${done?'done':''}">
+      <input type="checkbox" ${done?'checked':''} onchange="tickTodo('${t.id}',this.checked)" aria-label="完成待辦">
+      <div class="grow" onclick="showView('${t.go}')">
+        <div class="t">${t.t}</div>
+        <div class="d">${t.d}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">${dueChip(diff(t.due))}${TAGCHIP[t.tag]||''}</div>
+    </div>`;
+  }).join('') : '<div class="empty">目前沒有待辦 🎉</div>';
+
+  const q = [
+    {t:'簽到系統', href:LINKS.checkin, ic:'M9 12l2 2 4-5M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7z'},
+    {t:'會員名冊', href:LINKS.roster, ic:'M4 4h13l3 3v13H4zM8 4v5h8V4M8 14h8M8 17h5'},
+    {t:'出席率表', href:LINKS.attendance, ic:'M4 20V10M10 20V4M16 20v-7M20 20H3'},
+    {t:'公文範本', href:LINKS.docTpl, ic:'M6 2h9l5 5v15H6zM14 2v6h6'},
+    {t:'議程範本', href:LINKS.agendaTpl, ic:'M5 3h14v18H5zM9 8h6M9 12h6M9 16h4'},
+    {t:'申請表檢視', href:LINKS.applyView, ic:'M3 5h18v14H3zM3 9h18M8 13h5'},
+    {t:'新人指南', href:LINKS.guideNew, ic:'M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 0 2 2h13'},
+    {t:'官方網站', href:LINKS.site, ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18-3-3.5-3-14.5 0-18z'}
+  ];
+  document.getElementById('quickGrid').innerHTML = q.map(x=>
+    `<a class="qbtn" href="${x.href}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${x.ic}"/></svg>${x.t}</a>`).join('');
+
+  const cal = [
+    ...S.meetings.filter(m=>!m.done).map(m=>({d:m.date, t:m.name, k:m.type, go:'meetings'})),
+    ...S.events.filter(e=>diff(e.date)>=0).map(e=>({d:e.date, t:e.name, k:'活動', go:'events'}))
+  ].sort((a,b)=>D(a.d)-D(b.d)).slice(0,5);
+  document.getElementById('homeCal').innerHTML = cal.map(x=>
+    `<div class="todo" onclick="showView('${x.go}')" style="cursor:pointer">
+      <div class="grow"><div class="t">${x.t}</div><div class="d num">${fmt(x.d)}</div></div>
+      <span class="chip ${x.k==='活動'?'gold':'info'}">${x.k}</span>
+    </div>`).join('');
+}
+function tickTodo(id,v){ S.todoDone[id]=v; save(); renderHome(); }
+
+/* ══════════ 渲染：會議 ══════════ */
+function meetCard(m){
+  if(m.done){
+    const res = (m.resolutions||[]);
+    const openN = res.filter(r=>r.st!=='done').length;
+    return `<div class="card" onclick="openMeeting('${m.id}')" style="cursor:pointer">
+      <div class="row"><div class="grow">
+        <div class="title">${m.name}</div>
+        <div class="meta num">${fmt(m.date)}・出席 ${m.att.p}/${m.att.t}（${Math.round(m.att.p/m.att.t*100)}%）</div>
+      </div>${openN?`<span class="chip warn num">${openN} 項決議追蹤</span>`:'<span class="chip ok">決議已結案</span>'}</div>
+    </div>`;
+  }
+  const ck = S.checks[m.id]||{}, total = sopFor(m).length, done = Object.values(ck).filter(Boolean).length;
+  return `<div class="card" onclick="openMeeting('${m.id}')" style="cursor:pointer">
+    <div class="row">
+      <div class="grow">
+        <div class="title">${m.name}</div>
+        <div class="meta num">${fmt(m.date)} ${m.time}・${m.place}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        ${dueChip(diff(m.date))}<span class="chip info">${m.type}</span>
+      </div>
+    </div>
+    <div style="margin-top:9px" class="row">
+      <div class="prog grow"><i style="width:${total?Math.round(done/total*100):0}%"></i></div>
+      <span class="mini num">SOP ${done}/${total}</span>
+    </div>
+  </div>`;
+}
+function sopFor(m){ let L=[...SOP.pre,...SOP.mid,...SOP.post]; if(m.type==='會員大會') L=[...SOP.gaExtra,...L]; return L; }
+function renderMeetings(){
+  document.getElementById('meetUpcoming').innerHTML = S.meetings.filter(m=>!m.done).map(meetCard).join('');
+  document.getElementById('meetPast').innerHTML = S.meetings.filter(m=>m.done).map(meetCard).join('');
+}
+function openMeeting(id){
+  const m = S.meetings.find(x=>x.id===id); if(!m) return;
+  let html='';
+  if(m.done){
+    html += `<div class="card"><div class="title num">出席率 ${Math.round(m.att.p/m.att.t*100)}%</div>
+      <div class="meta num">${m.att.p}/${m.att.t} 人出席・已寫入 05-出席率管理</div>
+      <div class="prog blue" style="margin-top:8px"><i style="width:${Math.round(m.att.p/m.att.t*100)}%"></i></div></div>`;
+    html += `<div class="sec">決議執行追蹤</div>`;
+    html += (m.resolutions||[]).map((r,i)=>`
+      <div class="card flat"><div class="row">
+        <div class="grow"><div style="font-size:13.5px;font-weight:600">${r.t}</div>
+        ${r.duty?'<div class="mini">⚑ 值日生決議 — 系統已排程會議前一天自動提醒</div>':''}</div>
+        <select onchange="setRes('${m.id}',${i},this.value)" style="font-size:12px">
+          <option value="todo" ${r.st==='todo'?'selected':''}>待處理</option>
+          <option value="doing" ${r.st==='doing'?'selected':''}>執行中</option>
+          <option value="done" ${r.st==='done'?'selected':''}>已完成</option>
+        </select>
+      </div></div>`).join('');
+  } else {
+    html += `<div class="card"><div class="row">
+      <div class="grow"><div class="title num">${fmt(m.date)} ${m.time}</div><div class="meta">${m.place}${m.duty?`・值日生：${m.duty}`:''}</div></div>
+      ${dueChip(diff(m.date))}</div>
+      <div class="btnrow">
+        <a class="btn small primary" href="${LINKS.checkin}" target="_blank" rel="noopener">開啟簽到系統</a>
+        <a class="btn small ghost" href="${LINKS.agendaTpl}" target="_blank" rel="noopener">議程範本</a>
+        <a class="btn small ghost" href="${LINKS.docTpl}" target="_blank" rel="noopener">公文範本</a>
+      </div></div>`;
+    if(m.type==='理事會'){
+      html += `<div class="sec">案由（討論事項）</div>`;
+      html += (m.agenda||[]).map(a=>`<div class="card flat"><div class="row">
+        <div class="grow"><div style="font-size:13.5px;font-weight:600">${a.t}</div><div class="mini">提案：${a.by}</div></div>
+        <span class="chip ${a.src==='系統帶入'?'ok':'line'}">${a.src}</span></div></div>`).join('');
+      html += `<div class="card flat"><div class="row">
+        <input id="agnew-${m.id}" placeholder="新增案由…" style="flex:1">
+        <button class="btn small primary" onclick="addAgenda('${m.id}')">加入</button></div>
+        ${m.lastYear&&m.lastYear.length?`<div class="note">📅 去年同期案由參考：${m.lastYear.join('、')}</div>`:''}
+      </div>`;
+    }
+    const groups=[['會前準備',SOP.pre,'pre'],['會議中',SOP.mid,'mid'],['會後',SOP.post,'post']];
+    if(m.type==='會員大會') groups.unshift(['會員大會加項', SOP.gaExtra,'ga']);
+    let idx=0;
+    groups.forEach(([label,items])=>{
+      html += `<div class="sec">${label}</div><div class="card">`;
+      items.forEach(it=>{
+        const k='c'+idx++; const ck=(S.checks[m.id]||{})[k];
+        html += `<div class="ck ${ck?'done':''}">
+          <input type="checkbox" id="${m.id}-${k}" ${ck?'checked':''} onchange="tickSOP('${m.id}','${k}',this.checked)">
+          <label for="${m.id}-${k}">${it.link?`<a href="${LINKS[it.link]}" target="_blank" rel="noopener">${it.t}</a>`:it.t}${it.note?`<div class="mini">${it.note}</div>`:''}</label>
+          ${TAGCHIP[it.tag]}
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  }
+  openPanel(m.name, html);
+}
+function tickSOP(mid,k,v){ (S.checks[mid]=S.checks[mid]||{})[k]=v; save(); renderMeetings(); const el=document.getElementById(`${mid}-${k}`); if(el) el.closest('.ck').classList.toggle('done',v); }
+function setRes(mid,i,v){ const m=S.meetings.find(x=>x.id===mid); m.resolutions[i].st=v; save(); renderMeetings(); toast('決議狀態已更新'); }
+function addAgenda(mid){
+  const el=document.getElementById('agnew-'+mid); const t=(el.value||'').trim(); if(!t) return;
+  const m=S.meetings.find(x=>x.id===mid);
+  m.agenda.push({t, by:'秘書處', src:'新增'}); save(); openMeeting(mid); toast('案由已加入議程');
+}
+
+/* ══════════ 渲染：會員 ══════════ */
+let memFilter='all';
+document.querySelectorAll('#memSeg button').forEach(b=>b.onclick=()=>{
+  memFilter=b.dataset.f;
+  document.querySelectorAll('#memSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  renderMembers();
+});
+const STAGE_LABEL={guest:'來賓・待填申請表', form:'已填表・待理事會決議', attend:'見習中・累積出席', met:'條件達成・待排入理事會', pending:'已排入理事會・待決議'};
+function traineeCard(tr){
+  const steps=[
+    {t:'填寫見習申請表', done:tr.stage!=='guest'},
+    {t:'理事會決議 → 見習會員', done:['attend','met','pending'].includes(tr.stage), d:'建入 02-名冊・加入見習 LINE 群・傳新人指南'},
+    {t:`出席條件（半年內）：理事會 ${tr.board}/2・月例會 ${tr.monthly}/2`, done:tr.stage==='met'||tr.stage==='pending', d:'簽到系統自動累計，達成時自動通知', now:tr.stage==='attend'},
+    {t:'理事會決議 → 正式會員', done:false, now:tr.stage==='met'||tr.stage==='pending', d:'通過後：名冊改身份・照片改名歸檔・Line@ 會員卡同步'}
+  ];
+  let btns='';
+  if(tr.stage==='guest') btns=`<button class="btn small primary" onclick="copyLink('${tr.n}')">傳申請表給 ${tr.inviter}</button>
+    <button class="btn small ghost" onclick="setStage('${tr.n}','attend')">已填表・理事會已通過見習</button>`;
+  if(tr.stage==='attend') btns=`<button class="btn small ghost" onclick="bump('${tr.n}','board')">＋理事會出席</button>
+    <button class="btn small ghost" onclick="bump('${tr.n}','monthly')">＋月例會出席</button>`;
+  if(tr.stage==='met') btns=`<button class="btn small primary" onclick="toBoard('${tr.n}')">排入下次理事會案由</button>`;
+  if(tr.stage==='pending') btns=`<button class="btn small primary" onclick="promote('${tr.n}')">理事會已通過 → 轉正式會員</button>`;
+  return `<div class="card" style="${tr.stage==='met'||tr.stage==='pending'?'border-color:var(--gold)':''}">
+    <div class="row">
+      <div class="avatar tr">${tr.n[0]}</div>
+      <div class="grow"><div class="title">${tr.n}</div><div class="meta">邀約人 ${tr.inviter}・${STAGE_LABEL[tr.stage]}</div></div>
+      ${tr.stage==='met'?'<span class="chip gold">可轉正</span>':''}
+    </div>
+    <div class="pipe">${steps.map(s=>`
+      <div class="pstep ${s.done?'done':''} ${s.now?'now':''}">
+        <div class="dot"><i></i><b></b></div>
+        <div class="pc"><div class="pt num">${s.t}</div>${s.d?`<div class="pd">${s.d}</div>`:''}</div>
+      </div>`).join('')}</div>
+    <div class="btnrow">${btns}</div>
+  </div>`;
+}
+function renderMembers(){
+  const q=(document.getElementById('memSearch').value||'').trim();
+  const tArea=document.getElementById('traineeArea');
+  if(memFilter==='all'||memFilter==='trainee'){
+    const list=S.trainees.filter(t=>!q||t.n.includes(q));
+    tArea.innerHTML = list.length? `<div class="sec">見習追蹤 <span class="n num">${list.length}</span></div>`+list.map(traineeCard).join('') : '';
+  } else tArea.innerHTML='';
+  let ms=S.members;
+  if(memFilter==='unpaid') ms=ms.filter(m=>!m.paid);
+  if(memFilter==='trainee') ms=[];
+  if(q) ms=ms.filter(m=>m.n.includes(q)||m.role.includes(q));
+  document.getElementById('memberList').innerHTML = (memFilter==='trainee')?'' :
+    `<div class="sec">正式會員 <span class="n num">${ms.length}</span></div>`+
+    (ms.length? ms.map((m,i)=>`<div class="card flat" style="margin-bottom:7px"><div class="row">
+      <div class="avatar">${m.n[0]}</div>
+      <div class="grow"><div style="font-weight:700">${m.n} ${m.rep?'<span title="會員代表・有投票權" style="color:var(--gold)">★</span>':''}</div>
+      <div class="meta">${m.role}</div></div>
+      <button class="chip ${m.paid?'ok':'bad'}" style="border:none;cursor:pointer" onclick="togglePaid(${S.members.indexOf(m)})">${m.paid?'已繳費':'未繳費'}</button>
+    </div></div>`).join(''):'<div class="empty">沒有符合的會員</div>');
+}
+function togglePaid(i){ S.members[i].paid = S.members[i].paid?0:1; save(); renderMembers(); toast(`${S.members[i].n}：繳費狀態已更新（同步 02-名冊・規劃中）`); }
+function setStage(n,st){ const t=S.trainees.find(x=>x.n===n); t.stage=st; save(); renderMembers(); renderHome(); toast(`${n} 已成為見習會員 — 記得拉入見習 LINE 群`); }
+function bump(n,k){
+  const t=S.trainees.find(x=>x.n===n); t[k]=Math.min(2,t[k]+1);
+  if(t.board>=2&&t.monthly>=2){ t.stage='met'; toast(`🎉 ${n} 出席條件達成！系統已通知本人與輔導理事`); }
+  save(); renderMembers(); renderHome();
+}
+function toBoard(n){
+  const t=S.trainees.find(x=>x.n===n); t.stage='pending';
+  const m=S.meetings.find(x=>x.type==='理事會'&&!x.done);
+  if(m && !m.agenda.some(a=>a.t.includes(n))) m.agenda.push({t:`見習會員 ${n} 轉正式會員案`, by:'秘書處', src:'系統帶入'});
+  save(); renderMembers(); renderMeetings(); renderHome();
+  toast(`已把「${n} 轉正案」帶入${m?m.name:'下次理事會'}議程`);
+}
+function promote(n){
+  const i=S.trainees.findIndex(x=>x.n===n); if(i<0) return;
+  const t=S.trainees.splice(i,1)[0];
+  S.members.push({n:t.n, role:'會員', rep:0, paid:0});
+  save(); renderMembers(); renderHome();
+  toast(`🎊 ${n} 已轉為正式會員。後續自動：更新名冊身份・照片改名移至會員資料夾・Line@ 會員卡同步（規劃中）`);
+}
+function copyLink(n){
+  const txt=`邀請 ${n} 填寫大園青商見習申請表：${LINKS.traineeForm}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast('申請表連結已複製，可貼給邀約人')).catch(()=>toast(LINKS.traineeForm));
+  else toast(LINKS.traineeForm);
+}
+function addGuest(){
+  const n=(document.getElementById('gName').value||'').trim();
+  const inv=(document.getElementById('gInviter').value||'').trim()||'—';
+  if(!n){ toast('請輸入來賓姓名'); return; }
+  S.trainees.push({n, stage:'guest', inviter:inv, since:todayStr(), board:0, monthly:0});
+  document.getElementById('gName').value=''; document.getElementById('gInviter').value='';
+  toggleForm('guestForm'); save(); renderMembers(); renderHome();
+  toast(`已建立來賓 ${n}，下一步：傳申請表連結給 ${inv}`);
+}
+/* gviz JSONP 同步正式名冊（正式部署／本機開啟時可用） */
+function syncRoster(){
+  toast('連線 02-會員名冊…');
+  window.handleRoster = resp=>{
+    try{
+      const t=resp.table;
+      const grid=t.rows.map(r=>(r.c||[]).map(c=>c&&c.v!=null?String(c.v):''));
+      let header=t.cols.map(c=>(c.label||'').trim()), start=0;
+      if(header.filter(Boolean).length<2){ header=grid[0].map(s=>s.trim()); start=1; }
+      const iN=header.findIndex(h=>h.includes('姓名')), iD=header.findIndex(h=>h.includes('現任職務'));
+      const out=[];
+      for(let r=start;r<grid.length;r++){
+        const name=(grid[r][iN]||'').trim(); if(!name||name==='姓名') continue;
+        if(/歿|離會|退會/.test(name)) continue;
+        const duty=iD>=0?(grid[r][iD]||'').trim():'';
+        if(/前會員/.test(duty)) continue;
+        out.push({n:name.replace(/[（(][^）)]*[）)]/g,'').trim(), role:duty||'會員', rep:0, paid:1});
+      }
+      if(out.length){ S.members=out; save(); renderMembers(); renderHome(); toast(`✓ 已同步 ${out.length} 位會員（實名資料）`); }
+      else toast('名冊讀取成功但沒有資料列');
+    }catch(e){ toast('名冊格式解析失敗'); }
+  };
+  const s=document.createElement('script');
+  s.src=`https://docs.google.com/spreadsheets/d/1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y/gviz/tq?tqx=out:json;responseHandler:handleRoster&_=${Date.now()}`;
+  s.onerror=()=>toast('此預覽環境擋外部連線；部署正式版或本機開啟即可同步真實名冊');
+  document.body.appendChild(s);
+}
+
+/* ══════════ 渲染：活動 ══════════ */
+function eventCard(e){
+  const pct = e.cap? Math.min(100,Math.round(e.signed.length/e.cap*100)) : 0;
+  const closed = e.deadline && diff(e.deadline)<0;
+  const stages=[['企劃書','plan'],['籌備會','prep'],['理事會決議','passed']];
+  return `<div class="card">
+    <div class="row">
+      <div class="grow"><div class="title">${e.name}</div>
+        <div class="meta num">${fmt(e.date)}・${e.place}・總幹事 ${e.tf}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <span class="chip ${e.kind==='會內'?'info':'gold'}">${e.kind}</span>${dueChip(diff(e.date))}
+      </div>
+    </div>
+    ${e.passed?`
+      <div style="margin-top:10px" class="row">
+        <div class="prog grow"><i style="width:${pct}%"></i></div>
+        <span class="mini num">報名 ${e.signed.length}${e.cap?'/'+e.cap:''} 人</span>
+      </div>
+      <div class="mini num" style="margin-top:4px">報名截止 ${e.deadline?fmt(e.deadline):'未設定'}${closed?'（已截止）':''}・行事曆已同步 <span class="chip plan" style="font-size:10px">規劃中</span></div>
+      <div class="btnrow">
+        ${closed?'':`<button class="btn small primary" onclick="signup('${e.id}')">我要報名</button>`}
+        <button class="btn small ghost" onclick="roster('${e.id}')">檢視名單</button>
+      </div>
+      <div id="sf-${e.id}" class="addform"><div class="row">
+        <input id="sn-${e.id}" placeholder="姓名" style="flex:1">
+        <button class="btn small primary" onclick="signupGo('${e.id}')">確認報名</button>
+      </div></div>
+      <div id="rl-${e.id}" style="display:none" class="note num"></div>`
+    :`
+      <div class="pipe" style="margin-top:10px">${stages.map(([t,k],i)=>`
+        <div class="pstep ${e[k]?'done':(i===stages.findIndex(([,kk])=>!e[kk])?'now':'')}">
+          <div class="dot"><i></i><b></b></div>
+          <div class="pc"><div class="pt">${t}${k==='plan'?'（活動前 2 個月・系統提醒總幹事）':''}</div></div>
+        </div>`).join('')}
+      </div>
+      <div class="note">決議通過後開放報名，報名頁自動生成，接龍走入歷史。</div>`}
+  </div>`;
+}
+function renderEvents(){
+  const open=S.events.filter(e=>e.passed&&diff(e.date)>=0);
+  const plan=S.events.filter(e=>!e.passed&&diff(e.date)>=0);
+  document.getElementById('eventOpen').innerHTML = open.length? open.map(eventCard).join(''):'<div class="empty">目前沒有開放報名的活動</div>';
+  document.getElementById('eventPlanned').innerHTML = plan.length? plan.map(eventCard).join(''):'<div class="empty">—</div>';
+}
+function signup(id){ const f=document.getElementById('sf-'+id); f.classList.toggle('on'); const i=document.getElementById('sn-'+id); if(f.classList.contains('on')) i.focus(); }
+function signupGo(id){
+  const i=document.getElementById('sn-'+id); const n=(i.value||'').trim();
+  if(!n){ toast('請輸入姓名'); return; }
+  const e=S.events.find(x=>x.id===id);
+  if(e.signed.includes(n)){ toast(`${n} 已在名單上`); return; }
+  e.signed.push(n); save(); renderEvents(); renderHome();
+  toast(`✓ ${n} 報名成功（第 ${e.signed.length} 位）— 名單即時更新，免接龍`);
+}
+function roster(id){
+  const el=document.getElementById('rl-'+id); const e=S.events.find(x=>x.id===id);
+  el.style.display = el.style.display==='none'?'block':'none';
+  el.innerHTML = e.signed.length? e.signed.map((n,i)=>`${i+1}. ${n}`).join('　') : '尚無人報名';
+}
+function addEvent(){
+  const n=(document.getElementById('evName').value||'').trim();
+  const d=document.getElementById('evDate').value;
+  const c=parseInt(document.getElementById('evCap').value)||0;
+  const p=(document.getElementById('evPlace').value||'').trim()||'未定';
+  if(!n||!d){ toast('請填活動名稱與日期'); return; }
+  S.events.push({id:'e'+Date.now(), name:n, kind:'會內', date:d, place:p, deadline:d, cap:c, tf:'待指派', signed:[], plan:1, prep:1, passed:1});
+  toggleForm('eventForm'); save(); renderEvents(); renderHome();
+  toast(`活動「${n}」已建立 — 報名頁生成・行事曆同步與前 3 天提醒已排程（規劃中）`);
+}
+
+/* ══════════ 渲染：公文 ══════════ */
+const DOCSTEPS=['製作（套範本）','校稿','Line@ 推播＋上傳會務大群','雲端歸檔'];
+function docCard(d){
+  if(d.step>=99) return `<div class="card flat"><div class="row">
+    <div class="grow"><div style="font-weight:700">${d.name}</div><div class="meta num">發文 ${fmt(d.due)}</div></div>
+    <span class="chip ok">已歸檔（自動）</span></div></div>`;
+  const steps = d.mail? ['製作電子公文（35 天前）','校稿','Line@ 推播（30 天前）','列印＋郵寄標籤＋裝袋寄送','手冊編輯裝訂','雲端歸檔'] : DOCSTEPS;
+  return `<div class="card">
+    <div class="row"><div class="grow">
+      <div class="title">${d.name}</div>
+      <div class="meta num">期限 ${fmt(d.due)}${d.mailDue?`・郵寄 ${fmt(d.mailDue)}`:''}</div></div>
+      ${dueChip(diff(d.due))}</div>
+    <div class="pipe" style="margin-top:10px">${steps.map((s,i)=>`
+      <div class="pstep ${i<d.step?'done':(i===d.step?'now':'')}">
+        <div class="dot"><i></i><b></b></div>
+        <div class="pc"><div class="pt">${s}${/歸檔/.test(s)?' <span class="chip ok" style="font-size:10px">自動</span>':''}${/推播/.test(s)?' <span class="chip plan" style="font-size:10px">規劃中</span>':''}${/標籤/.test(s)?' <span class="chip info" style="font-size:10px">一鍵</span>':''}</div></div>
+      </div>`).join('')}</div>
+    <div class="btnrow">
+      <a class="btn small ghost" href="${LINKS.docTpl}" target="_blank" rel="noopener">開啟公文範本</a>
+      <button class="btn small primary" onclick="docNext('${d.id}')">完成「${steps[Math.min(d.step,steps.length-1)]}」</button>
+    </div>
+  </div>`;
+}
+function renderDocs(){
+  document.getElementById('docActive').innerHTML = S.docs.filter(d=>d.step<99).map(docCard).join('')||'<div class="empty">沒有進行中的公文</div>';
+  document.getElementById('docDone').innerHTML = S.docs.filter(d=>d.step>=99).map(docCard).join('');
+}
+function docNext(id){
+  const d=S.docs.find(x=>x.id===id);
+  const total = d.mail?6:4;
+  d.step++;
+  if(d.step>=total){ d.step=99; toast('公文流程完成 — 已自動歸檔至雲端 ✓'); }
+  else toast('已完成，進入下一步');
+  save(); renderDocs(); renderHome();
+}
+
+/* ══════════ 渲染：更多 ══════════ */
+function renderMore(){
+  const autos=[
+    {t:'公文儲存至雲端', st:'auto', d:'已完成自動設定'},
+    {t:'待辦自動生成（7/30/35 天規則、活動提醒）', st:'sys', d:'本系統內建'},
+    {t:'活動報名統計・名單即時更新', st:'sys', d:'本系統內建，取代接龍'},
+    {t:'見習出席條件偵測＋達成通知', st:'sys', d:'介面已就緒，串簽到資料後全自動'},
+    {t:'值日生決議 → 會前一天自動提醒', st:'sys', d:'介面已就緒，串 LINE 通知後全自動'},
+    {t:'Line@ 公文/訊息自動推播', st:'plan', d:'需 LINE Messaging API（注意免費額度 200 則/月）'},
+    {t:'簽到 csv → 05-出席率管理 自動匯入', st:'plan', d:'Apps Script 排程'},
+    {t:'活動 → Google 日曆自動新增（TimeTree 可訂閱）', st:'plan', d:'TimeTree API 已終止，改走 Google 日曆'},
+    {t:'Line@ 會員卡照片自動同步', st:'plan', d:'照片改名歸檔後自動抓取'}
+  ];
+  const CH={auto:'<span class="chip ok">已自動</span>',sys:'<span class="chip info">系統內建</span>',plan:'<span class="chip plan">規劃中</span>'};
+  document.getElementById('autoCenter').innerHTML = autos.map(a=>`
+    <div class="todo"><div class="grow"><div class="t">${a.t}</div><div class="d">${a.d}</div></div>${CH[a.st]}</div>`).join('');
+
+  const tools=[
+    ['簽到系統 V4.7', LINKS.checkin],['02-會員名冊', LINKS.roster],['05-出席率管理', LINKS.attendance],
+    ['公文範本', LINKS.docTpl],['議程範本', LINKS.agendaTpl],['見習申請表', LINKS.traineeForm],
+    ['入會申請表檢視', LINKS.applyView],['青商會是什麼（電子書）', LINKS.guideWhat],['大園青商新人指南', LINKS.guideNew],['官方網站', LINKS.site]
+  ];
+  document.getElementById('toolLinks').innerHTML = tools.map(([t,h])=>`
+    <a class="linkrow" href="${h}" target="_blank" rel="noopener">
+      <div class="ic"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14L21 3M15 3h6v6M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></div>
+      <div class="grow" style="font-size:13.5px;font-weight:600">${t}</div>
+      <span class="mini">開啟 ↗</span></a>`).join('');
+
+  const groups=[
+    ['官方 Line@','功能平台・重要訊息群發（本系統入口按鈕在此）','info'],
+    ['會務大群','所有會員・活動最終接龍處・文件照片相簿','info'],
+    ['理監事群','核心群組・每年換新・當屆活動相片','info'],
+    ['見習群組','會長＋秘書長＋會員擴展主委＋見習會員','warn'],
+    ['YB 群組','所有 YB・活動最先接龍處','line'],
+    ['桃竹苗區財秘群','每年由區會長建・跨分會溝通','line'],
+    ['全國財秘群','每年由總會秘書長建・重要資訊傳遞','line']
+  ];
+  document.getElementById('lineMap').innerHTML = groups.map(([t,d,c])=>`
+    <div class="todo"><div class="grow"><div class="t">${t}</div><div class="d">${d}</div></div><span class="chip ${c}">LINE</span></div>`).join('');
+}
+
+/* ══════════ 導覽 ══════════ */
+function showView(v){
+  closePanel();
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on', x.id==='view-'+v));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.dataset.v===v));
+  window.scrollTo({top:0});
+}
+function openPanel(title, html){
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=html;
+  document.getElementById('panel').classList.add('on');
+}
+function closePanel(){ document.getElementById('panel').classList.remove('on'); }
+function toggleForm(id){ document.getElementById(id).classList.toggle('on'); }
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'), 2600);
+}
+function renderAll(){ renderHome(); renderMeetings(); renderMembers(); renderEvents(); renderDocs(); renderMore(); }
+renderAll();
+showView('home');
+</script>
+
+</body>
+</html>

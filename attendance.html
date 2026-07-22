@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>大園青商・出席率查詢</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --blue:#14508F; --gold:#C39B2D; --on-blue:#FFFFFF;
+  --bg:#EFF3F8; --surface:#FFFFFF; --surface2:#F6F9FC;
+  --text:#1B2836; --muted:#5B6B7E; --line:#DCE4EE;
+  --ok:#188A54; --ok-bg:#E3F4EC; --warn:#B26A08; --warn-bg:#FBF0DC;
+  --bad:#C7362F; --bad-bg:#FBE7E5; --info:#14508F; --info-bg:#E5EEF8;
+  --shadow:0 1px 3px rgba(16,37,66,.08),0 4px 14px rgba(16,37,66,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --blue:#5C97D8; --gold:#D4B155; --on-blue:#0D1420;
+    --bg:#0D1420; --surface:#17212F; --surface2:#1E2A3B;
+    --text:#E8EEF6; --muted:#93A3B8; --line:#28374B;
+    --ok:#4CC08D; --ok-bg:#152E24; --warn:#E5A33C; --warn-bg:#332816;
+    --bad:#E5645C; --bad-bg:#361B1B; --info:#6FA6E0; --info-bg:#1B2C42;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="light"]{
+  --blue:#14508F; --gold:#C39B2D; --on-blue:#FFFFFF;
+  --bg:#EFF3F8; --surface:#FFFFFF; --surface2:#F6F9FC;
+  --text:#1B2836; --muted:#5B6B7E; --line:#DCE4EE;
+  --ok:#188A54; --ok-bg:#E3F4EC; --warn:#B26A08; --warn-bg:#FBF0DC;
+  --bad:#C7362F; --bad-bg:#FBE7E5; --info:#14508F; --info-bg:#E5EEF8;
+  --shadow:0 1px 3px rgba(16,37,66,.08),0 4px 14px rgba(16,37,66,.06);
+}
+:root[data-theme="dark"]{
+  --blue:#5C97D8; --gold:#D4B155; --on-blue:#0D1420;
+  --bg:#0D1420; --surface:#17212F; --surface2:#1E2A3B;
+  --text:#E8EEF6; --muted:#93A3B8; --line:#28374B;
+  --ok:#4CC08D; --ok-bg:#152E24; --warn:#E5A33C; --warn-bg:#332816;
+  --bad:#E5645C; --bad-bg:#361B1B; --info:#6FA6E0; --info-bg:#1B2C42;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+#shell{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+button,select{font-family:inherit;cursor:pointer}
+select{font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 8px}
+button:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.appbar{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:2px solid var(--gold);padding:12px 16px 10px;display:flex;align-items:center;gap:10px}
+.appbar .mark{width:34px;height:34px;border-radius:9px;background:var(--blue);color:var(--on-blue);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none}
+.appbar h1{font-size:16.5px;margin:0;font-weight:700}
+.appbar .sub{font-size:11.5px;color:var(--muted)}
+.appbar .spacer{flex:1}
+.wrap{padding:14px}
+.sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.14em;margin:18px 2px 8px;display:flex;align-items:center;gap:8px}
+.sec:first-child{margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.num{font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.info{background:var(--info-bg);color:var(--info)}
+.chip.gold{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.chip.line{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn{border:none;border-radius:11px;padding:9px 14px;font-size:13.5px;font-weight:700;background:var(--surface2);color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--blue);color:var(--on-blue)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--blue)}
+.btn.small{padding:5px 10px;font-size:12px;border-radius:8px}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.presets .btn.on{background:var(--info-bg);color:var(--info);border:1px solid var(--blue)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.kpi .v{font-size:19px;font-weight:800;color:var(--blue)}
+.kpi .k{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.filters .btn.on{background:var(--blue);color:var(--on-blue)}
+.rk{border-bottom:1px solid var(--line);padding:10px 2px;cursor:pointer}
+.rk:last-child{border-bottom:none}
+.rk .no{width:26px;text-align:center;font-weight:800;color:var(--muted);flex:none;font-size:13px}
+.rk .no.top{color:var(--gold)}
+.rk .nm{font-weight:700;font-size:14.5px}
+.rk .rl{font-size:11.5px;color:var(--muted)}
+.rk .pc{font-weight:800;font-size:15px;text-align:right;flex:none;width:64px}
+.rk .frac{font-size:11px;color:var(--muted);text-align:right}
+.bar{height:6px;background:var(--surface2);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;border-radius:5px}
+.detail{display:none;margin-top:10px;background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:10px}
+.rk.open .detail{display:block}
+.detail table{border-collapse:collapse;font-size:11.5px;white-space:nowrap}
+.detail th,.detail td{padding:3px 7px;text-align:center;border-bottom:1px solid var(--line)}
+.detail th{color:var(--muted);font-weight:600}
+.detail .tt{overflow-x:auto}
+.mk-y{color:var(--ok);font-weight:800}
+.mk-n{color:var(--bad);font-weight:800}
+.mk-g{color:var(--gold);font-weight:800}
+.mk-o{color:var(--line)}
+.note{background:var(--surface2);border:1px dashed var(--line);border-radius:11px;padding:9px 11px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;max-width:88%;text-align:center;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.trc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}
+.dots{letter-spacing:3px;font-size:15px}
+details.rules{margin-top:14px}
+details.rules summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--blue)}
+details.rules .card{margin-top:8px;font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<div id="shell">
+  <header class="appbar">
+    <div class="mark">JCI</div>
+    <div>
+      <h1>出席率查詢</h1>
+      <div class="sub" id="dataStatus">資料快照</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn small ghost" onclick="syncLive()">⟳ 同步最新</button>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <label class="sub" for="selFrom">起始月份</label><br>
+          <select id="selFrom" onchange="presetOff();render()"></select>
+        </div>
+        <div style="color:var(--muted)">～</div>
+        <div class="grow">
+          <label class="sub" for="selTo">結束月份</label><br>
+          <select id="selTo" onchange="presetOff();render()"></select>
+        </div>
+      </div>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="sec">會員出席率排行（降冪）</div>
+    <div class="filters" id="filters"></div>
+    <div class="card" id="ranking"></div>
+    <div class="legend">
+      <span><span class="mk-y">✓</span> 出席（計分）</span>
+      <span><span class="mk-n">✗</span> 缺席</span>
+      <span><span class="mk-g">◐</span> 列席（出席但不計分）</span>
+      <span><span class="mk-o">—</span> 未召開／不適用</span>
+    </div>
+
+    <div class="sec">選務 候選人資格判定</div>
+    <div class="card">
+      <div class="row">
+        <select id="candRole" style="flex:1"></select>
+        <select id="candName" style="flex:1.4"><option value="">選擇候選人…</option></select>
+        <button class="btn small primary" onclick="addCand()">判定</button>
+      </div>
+      <div class="note">依章程實施細則第廿四～廿七條自動判定。出席率：會長・副會長須「上年度＋競選該年度」皆達標，其餘僅看競選該年度；出席率按候選人原有職位應出席之會議計算（第廿八條）。</div>
+    </div>
+    <div id="candList"></div>
+
+    <div class="sec">見習會員 通過條件追蹤</div>
+    <div class="note" style="margin:0 0 10px">
+      條件（依實際執行）：見習通過後出席 <b>理事會 ×2＋月例會 ×2</b>（通過當次理事會不計、當月月例會計入）＋<b>繳清見習會費</b>。
+      出席由簽到紀錄自動累計，會費請手動勾選。見習期自理事會認可日起算，基本 2 個月、最長 6 個月（章程第九條）。
+    </div>
+    <div id="trainees"></div>
+
+    <details class="rules">
+      <summary>計算規則說明</summary>
+      <div class="card">
+        ．每月三種會議（理事會／監事會／月例會），試算表第 1 列打 v ＝已召開，才計入應出席。<br>
+        ．應出席依職務：理事會＝會長、輔導會長、副會長、秘書長、財務長、理事、法制顧問、常務監事；監事會＝常務監事、監事；月例會＝全體。一般會員僅計月例會。<br>
+        ．出席率＝區間內 實出席合計 ÷ 應出席合計（<b>加總法</b>，非各期平均；2026-07-14 Ted 確認）。<br>
+        ．跨年度／職務變動：各月依「當年度該員職務」計算（章程實施細則第廿八條：按候選人原有職位應出席之會議計算）。<br>
+        ．選務門檻（實施細則第廿四～廿七條）：會長 80%（<b>上年度及競選該年度</b>皆須達標）・副會長 75%（同上兩年度）・監事 75%、秘書長／財務長／理事 70%（僅競選該年度）。可用上方區間分別選兩個年度逐一檢核。<br>
+        ．見習規則（實施細則第九～十一條）：見習期自理事會認可日起算，基本 2 個月、最長 6 個月；期滿由理事會無記名投票 2/3 通過，繳清費用並宣誓後成為基本會員。實務執行要件＝出席理事會及月例會各 2 次＋繳清見習會費（章程之講習會等要件已停用，2026-07-15 確認）。<br>
+        ．候選人「曾任主任委員」判定僅能查 2025–26 的主委登載，更早年度請人工確認；會齡取自 02-會員名冊「會員一覽」。<br>
+        ．資料來源：05-出席率管理（今年度、前年度、參數設定三分頁）；規則依《大園國際青年商會章程》。
+      </div>
+    </details>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const SNAPSHOT = {"snapshot":"2026-07-15","params":{"會長":{"理事會":1,"監事會":0,"月例會":1},"輔導會長":{"理事會":1,"監事會":0,"月例會":1},"副會長":{"理事會":1,"監事會":0,"月例會":1},"秘書長":{"理事會":1,"監事會":0,"月例會":1},"財務長":{"理事會":1,"監事會":0,"月例會":1},"常務監事":{"理事會":1,"監事會":1,"月例會":1},"理事":{"理事會":1,"監事會":0,"月例會":1},"監事":{"理事會":0,"監事會":1,"月例會":1},"會員":{"理事會":0,"監事會":0,"月例會":1},"法制顧問":{"理事會":1,"監事會":0,"月例會":1}},"years":[{"year":2025,"held":{"1-理事會":false,"1-監事會":false,"1-月例會":false,"2-理事會":false,"2-監事會":false,"2-月例會":false,"3-理事會":false,"3-監事會":false,"3-月例會":false,"4-理事會":false,"4-監事會":false,"4-月例會":false,"5-理事會":false,"5-監事會":false,"5-月例會":false,"6-理事會":false,"6-監事會":false,"6-月例會":false,"7-理事會":true,"7-監事會":false,"7-月例會":true,"8-理事會":true,"8-監事會":false,"8-月例會":true,"9-理事會":true,"9-監事會":false,"9-月例會":true,"10-理事會":true,"10-監事會":false,"10-月例會":true,"11-理事會":true,"11-監事會":true,"11-月例會":true,"12-理事會":true,"12-監事會":false,"12-月例會":true},"members":[{"n":"許俊民","role":"會長","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"黃駿晹","role":"輔導會長","att":{"8-理事會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"12-月例會":1}},{"n":"林振暉","role":"法制顧問","att":{"7-理事會":1,"8-月例會":1,"9-理事會":1,"10-理事會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"徐睿亞","role":"秘書長","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"12-理事會":1,"12-月例會":1}},{"n":"李昀潔","role":"財務長","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"許政慶","role":"常務監事","att":{"7-理事會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-監事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"曾聖富","role":"副會長","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"許育雯","role":"副會長","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-月例會":1}},{"n":"吳瑞田","role":"理事","att":{"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"吳婉瑄","role":"理事","att":{"7-理事會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"羅家明","role":"理事","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"8-月例會":1,"9-理事會":1,"9-月例會":1,"10-理事會":1,"10-月例會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"洪千崴","role":"監事","att":{"10-月例會":1,"11-監事會":1,"12-月例會":1}},{"n":"許宏霖","role":"監事","att":{"7-理事會":1,"9-月例會":1,"10-月例會":1,"11-理事會":1,"11-監事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"王紹璿","role":"會員","att":{"12-月例會":1}},{"n":"游能翔","role":"會員","att":{"10-月例會":1,"12-月例會":1}},{"n":"林詠玲","role":"會員","att":{"7-月例會":1,"8-月例會":1,"9-月例會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-月例會":1}},{"n":"王良軒","role":"會員","att":{"10-月例會":1}},{"n":"毛清源","role":"會員","att":{"9-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"袁圳生","role":"會員","att":{"9-月例會":1,"12-月例會":1}},{"n":"許家榮","role":"會員","att":{"10-月例會":1}},{"n":"賴麗如","role":"會員","att":{}},{"n":"郭葳","role":"會員","att":{}},{"n":"游騰隆","role":"會員","att":{}},{"n":"沈寛亦","role":"會員","att":{"7-理事會":1,"7-月例會":1,"9-理事會":1,"9-月例會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"吳鼎鈞","role":"會員","att":{"7-理事會":1,"8-理事會":1,"9-理事會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"12-理事會":1,"12-月例會":1}},{"n":"許哲維","role":"會員","att":{"7-理事會":1,"7-月例會":1,"8-理事會":1,"10-理事會":1,"10-月例會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"吳郁婷","role":"會員","att":{"9-月例會":1,"10-月例會":1,"11-月例會":1,"12-月例會":1}},{"n":"簡帷芫","role":"會員","att":{"7-理事會":1,"9-理事會":1,"9-月例會":1,"10-月例會":1,"12-月例會":1}},{"n":"陳泓俞","role":"會員","att":{"8-理事會":1,"9-月例會":1,"10-月例會":1,"12-月例會":1}},{"n":"黃柄捷","role":"會員","att":{"7-理事會":1,"8-理事會":1,"12-理事會":1,"12-月例會":1}},{"n":"許常旭","role":"會員","att":{"7-月例會":1,"10-月例會":1,"11-月例會":1,"12-月例會":1}},{"n":"陳星諭","role":"會員","att":{"10-理事會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"陳亮宇","role":"會員","att":{"10-理事會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}},{"n":"王棋正","role":"會員","att":{"10-理事會":1,"11-理事會":1,"11-月例會":1,"12-理事會":1,"12-月例會":1}}]},{"year":2026,"held":{"1-理事會":true,"1-監事會":false,"1-月例會":true,"2-理事會":true,"2-監事會":false,"2-月例會":true,"3-理事會":true,"3-監事會":true,"3-月例會":true,"4-理事會":true,"4-監事會":false,"4-月例會":true,"5-理事會":true,"5-監事會":false,"5-月例會":true,"6-理事會":true,"6-監事會":true,"6-月例會":true,"7-理事會":true,"7-監事會":false,"7-月例會":false,"8-理事會":false,"8-監事會":false,"8-月例會":false,"9-理事會":false,"9-監事會":false,"9-月例會":false,"10-理事會":false,"10-監事會":false,"10-月例會":false,"11-理事會":false,"11-監事會":false,"11-月例會":false,"12-理事會":false,"12-監事會":false,"12-月例會":false},"members":[{"n":"曾聖富","role":"會長","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"許俊民","role":"輔導會長","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"黃駿晹","role":"法制顧問","att":{"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"6-理事會":1,"6-月例會":1}},{"n":"吳瑞田","role":"秘書長","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"7-理事會":1}},{"n":"羅家明","role":"財務長","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"7-理事會":1}},{"n":"許育雯","role":"常務監事","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-監事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-監事會":1,"7-理事會":1}},{"n":"許政慶","role":"副會長","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"6-理事會":1,"7-理事會":1}},{"n":"許宏霖","role":"副會長","att":{"1-理事會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"李昀潔","role":"理事","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"徐睿亞","role":"理事","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"許哲維","role":"理事","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"沈寛亦","role":"監事","att":{"1-月例會":1,"2-月例會":1,"3-理事會":1,"3-監事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-監事會":1}},{"n":"吳婉瑄","role":"監事","att":{"2-月例會":1,"3-監事會":1,"3-月例會":1,"4-月例會":1,"5-月例會":1,"6-監事會":1,"6-月例會":1,"7-理事會":1}},{"n":"許常旭","role":"會員","att":{}},{"n":"洪千崴","role":"會員","att":{"1-月例會":1,"4-月例會":1}},{"n":"林振暉","role":"會員","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"4-理事會":1,"4-月例會":1,"7-理事會":1}},{"n":"陳泓俞","role":"會員","att":{"6-月例會":1}},{"n":"簡帷芫","role":"會員","att":{"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-月例會":1,"4-月例會":1,"6-月例會":1}},{"n":"吳郁婷","role":"會員","att":{"1-月例會":1,"2-月例會":1,"3-月例會":1}},{"n":"黃柄捷","role":"會員","att":{}},{"n":"吳鼎鈞","role":"會員","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"6-理事會":1,"6-月例會":1}},{"n":"王紹璿","role":"會員","att":{}},{"n":"游能翔","role":"會員","att":{"1-月例會":1}},{"n":"林詠玲","role":"會員","att":{"1-理事會":1,"1-月例會":1,"2-理事會":1,"2-月例會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-月例會":1,"7-理事會":1}},{"n":"王良軒","role":"會員","att":{}},{"n":"毛清源","role":"會員","att":{"4-月例會":1}},{"n":"袁圳生","role":"會員","att":{"1-月例會":1,"2-月例會":1,"3-理事會":1,"3-月例會":1,"4-月例會":1,"6-月例會":1}},{"n":"賴麗如","role":"會員","att":{}},{"n":"郭葳","role":"會員","att":{}},{"n":"游騰隆","role":"會員","att":{}},{"n":"陳星諭","role":"會員","att":{"2-月例會":1,"3-月例會":1,"4-月例會":1}},{"n":"王棋正","role":"會員","att":{"1-理事會":1,"1-月例會":1,"2-月例會":1,"3-月例會":1,"4-理事會":1,"4-月例會":1,"5-月例會":1,"6-理事會":1,"7-理事會":1}},{"n":"陳亮宇","role":"會員","att":{"1-理事會":1,"2-月例會":1,"3-月例會":1}},{"n":"蕭加恩","role":"見習會員","att":{"3-理事會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"王意媗","role":"會員","att":{"3-理事會":1,"4-理事會":1,"4-月例會":1,"5-理事會":1,"5-月例會":1,"6-理事會":1,"6-月例會":1,"7-理事會":1}},{"n":"鄭宇成","role":"見習會員","att":{"5-理事會":1}},{"n":"劉逸文","role":"見習會員","att":{"5-理事會":1,"5-月例會":1,"7-理事會":1}},{"n":"游崴宇","role":"見習會員","att":{"5-理事會":1}},{"n":"何柏融","role":"見習會員","att":{"5-理事會":1}},{"n":"許喬柔","role":"見習會員","att":{"7-理事會":1}}]}],"seniority":{"曾聖富":8,"許俊民":6,"許宏霖":4,"許政慶":4,"吳瑞田":2,"羅家明":3,"黃駿晹":6,"許育雯":4,"李昀潔":2,"徐睿亞":1,"許哲維":1,"沈寛亦":3,"吳婉瑄":1,"許常旭":2,"洪千崴":7,"林振暉":7,"陳泓俞":2,"簡帷芫":1,"吳郁婷":1,"黃柄捷":0,"吳鼎鈞":0,"王紹璿":20,"游能翔":17,"林詠玲":16,"王良軒":14,"毛清源":12,"袁圳生":11,"賴麗如":5,"郭葳":3,"游騰隆":3,"陳星諭":0,"陳亮宇":0,"王棋正":0,"王意媗":0,"陳柏霖":9,"莊世弘":12,"黃佩芬":7,"高萬興":40,"楊許月鳳":40,"曾錦文":40,"盧秀麗":40,"蔡瑞恭":39,"郭鳳琳":37,"潘文祥":34,"郭正義":35,"游源隆":31,"王文慶":33,"沈昭南":32,"林文川":31,"林萬益":34,"顏瑞芳":29,"吳信霖":26,"許良謀":25,"鄭國忠":27,"曾國性":33,"許呈禎":32,"吳俊卿":27,"楊燦菻":25,"游正雄":19,"游源雄":15,"邱淑芬":21,"王祥弘":16,"鄭朝駿":10,"詹志浩":11,"許文松":8,"張榮健":40,"潘榮茂":37,"林李福":38,"張建隆":40,"陳雙富":35,"賴文德":33,"李忠明":39,"許聰賢":36,"蕭新生":34,"蔡昞璁":38,"蔡長富":39,"許馬周":40,"游信明":35,"游象河":32,"羅至仁":31,"吳建巍":29,"沈文印":30,"林界方":25,"許信錄":40,"陳敬堯":28,"游能乾":30,"徐其萬":31,"吳文輝":30,"羅志全":35,"郭國義":26,"張政順":19,"游智健":22,"郭志歆":21,"許瑞儀":15,"黃財貴":40,"黃文義":40,"曾長恩":40,"郭啟展":38,"許枝益":36,"陳文勇":36,"許文郎":33,"鄧淡敦":31,"莊國清":31,"邱舜傑":27,"薛克岳":26,"陳一誠":25,"李明龍":24,"林淑娟":20,"林志明":19,"宋惠君":15,"黃映琦":14,"邱垂和":12,"呂信益":8,"賴振輝":8,"李日賢":7,"黃美凰":3},"history":{"曾聖富":[[2026,"會長"],[2024,"常務監事"],[2025,"副會長"],[2022,"監事"],[2023,"監事"]],"許俊民":[[2025,"會長"],[2026,"輔導會長"],[2022,"財務長"],[2024,"副會長"],[2023,"理事"],[2021,"理事"]],"黃駿晹":[[2024,"會長"],[2025,"輔導會長"],[2026,"法制顧問"],[2022,"秘書長"],[2023,"副會長"],[2021,"理事"]],"林振暉":[[2023,"會長"],[2024,"輔導會長"],[2025,"法制顧問"],[2021,"秘書長"],[2022,"副會長"],[2020,"理事"],[2026,"編輯紀錄主委"]],"游能翔":[[2022,"會長"],[2023,"輔導會長"],[2017,"常務監事"],[2021,"副會長"],[2015,"理事"],[2019,"監事"],[2016,"監事"]],"許文松":[[2021,"會長"],[2022,"輔導會長"],[2023,"法制顧問"],[2020,"副會長"],[2019,"理事"]],"詹志浩":[[2020,"會長"],[2021,"輔導會長"],[2022,"法制顧問"],[2019,"副會長"],[2017,"理事"],[2019,"理事"],[2018,"理事"]],"鄭朝駿":[[2019,"會長"],[2020,"輔導會長"],[2021,"法制顧問"],[2018,"副會長"],[2017,"理事"]],"王祥弘":[[2018,"會長"],[2019,"輔導會長"],[2015,"常務監事"],[2017,"副會長"],[2013,"副會長"],[2012,"理事"],[2011,"理事"]],"邱淑芬":[[2017,"會長"],[2018,"輔導會長"],[2019,"法制顧問"],[2015,"秘書長"],[2008,"秘書長"],[2012,"財務長"],[2010,"常務監事"],[2016,"副會長"],[2007,"監事"]],"王良軒":[[2016,"會長"],[2017,"輔導會長"],[2018,"法制顧問"],[2015,"副會長"],[2013,"理事"],[2014,"監事"]],"游源雄":[[2015,"會長"],[2016,"輔導會長"],[2014,"常務監事"],[2013,"理事"]],"游正雄":[[2014,"會長"],[2015,"輔導會長"],[2013,"法制顧問"],[2012,"常務監事"],[2011,"副會長"],[2010,"理事"],[2009,"理事"]],"林翔翊":[[2013,"會長"],[2014,"輔導會長"],[2016,"法制顧問"],[2012,"秘書長"],[2009,"副會長"],[2007,"理事"],[2008,"監事"]],"楊燦箖":[[2012,"會長"],[2013,"輔導會長"],[2011,"秘書長"],[2009,"副會長"]],"吳俊卿":[[2011,"會長"],[2012,"輔導會長"]],"許呈禎":[[2010,"會長"],[2011,"輔導會長"],[2008,"法制顧問"],[2009,"秘書長"]],"曾國性":[[2009,"會長"],[2010,"輔導會長"],[2008,"副會長"]],"楊謙讓":[[2008,"會長"],[2009,"輔導會長"]],"鄭國忠":[[2007,"會長"],[2008,"輔導會長"]],"許良謀":[[2007,"輔導會長"]],"林詠玲":[[2024,"法制顧問"],[2015,"財務長"],[2013,"財務長"],[2018,"常務監事"],[2023,"副會長"],[2012,"理事"],[2011,"理事"],[2020,"監事"],[2025,"社區發展主委"]],"毛清源":[[2020,"法制顧問"],[2017,"財務長"],[2019,"常務監事"],[2018,"副會長"],[2016,"理事"]],"吳信霖":[[2017,"法制顧問"]],"林志明":[[2015,"法制顧問"],[2014,"副會長"],[2012,"副會長"],[2010,"理事"],[2011,"監事"],[2018,"監事"]],"張政順":[[2014,"法制顧問"],[2010,"財務長"],[2013,"常務監事"],[2012,"副會長"],[2009,"理事"],[2011,"監事"]],"王紹璿":[[2012,"法制顧問"],[2018,"財務長"],[2011,"常務監事"],[2010,"副會長"],[2008,"理事"],[2009,"監事"]],"陳一誠":[[2011,"法制顧問"],[2007,"副會長"]],"郭志歆":[[2010,"法制顧問"],[2008,"財務長"],[2009,"常務監事"],[2013,"副會長"],[2007,"理事"],[2012,"監事"]],"郭國義":[[2009,"法制顧問"],[2007,"秘書長"],[2008,"常務監事"]],"李降泉":[[2007,"法制顧問"],[2011,"財務長"]],"吳瑞田":[[2026,"秘書長"],[2025,"理事"],[2025,"月會聯誼主委"]],"徐睿亞":[[2025,"秘書長"],[2026,"理事"],[2025,"運動休閒主委"]],"郭葳":[[2024,"秘書長"]],"許育雯":[[2023,"秘書長"],[2026,"常務監事"],[2025,"副會長"],[2022,"理事"]],"袁圳生":[[2020,"秘書長"],[2019,"財務長"],[2022,"常務監事"],[2021,"副會長"],[2018,"理事"],[2017,"理事"],[2024,"監事"]],"陳柏霖":[[2019,"秘書長"],[2020,"監事"]],"謝文琳":[[2018,"秘書長"],[2010,"副會長"],[2014,"副會長"],[2009,"理事"],[2007,"理事"]],"趙中恆":[[2017,"秘書長"]],"莊世弘":[[2016,"秘書長"],[2020,"常務監事"],[2024,"副會長"],[2019,"副會長"],[2018,"監事"],[2021,"監事"],[2017,"監事"]],"陳澤民":[[2014,"秘書長"]],"陶廣明":[[2013,"秘書長"],[2016,"常務監事"],[2015,"副會長"],[2014,"監事"]],"許民誠":[[2010,"秘書長"],[2011,"副會長"],[2008,"理事"],[2013,"監事"],[2012,"監事"],[2009,"監事"]],"羅家明":[[2026,"財務長"],[2025,"理事"],[2025,"才能訓練主委"]],"李昀潔":[[2025,"財務長"],[2026,"理事"]],"許政慶":[[2024,"財務長"],[2025,"常務監事"],[2026,"副會長"],[2023,"理事"]],"洪千崴":[[2023,"財務長"],[2021,"財務長"],[2022,"副會長"],[2020,"理事"],[2024,"監事"],[2025,"監事"]],"曹䕒文":[[2020,"財務長"]],"游芳綾":[[2016,"財務長"]],"謝明清":[[2014,"財務長"],[2013,"理事"]],"林原呈":[[2009,"財務長"],[2010,"監事"]],"張筱莉":[[2007,"財務長"]],"許家榮":[[2023,"常務監事"],[2022,"理事"],[2021,"理事"]],"賴振輝":[[2021,"常務監事"],[2020,"副會長"],[2019,"理事"]],"陳冠禕":[[2007,"常務監事"]],"許宏霖":[[2026,"副會長"],[2023,"理事"],[2024,"理事"],[2025,"監事"],[2026,"兄弟會主委"]],"巫建漢":[[2016,"副會長"],[2014,"理事"],[2015,"監事"]],"李明龍":[[2017,"副會長"],[2010,"理事"],[2019,"監事"]],"林界方":[[2007,"副會長"]],"沈寛亦":[[2024,"理事"],[2026,"監事"],[2025,"兄弟會主委"]],"游均慧":[[2016,"理事"],[2017,"監事"]],"李世坤":[[2014,"理事"],[2015,"監事"]],"陳冠穎":[[2024,"理事"]],"朱銘德":[[2016,"理事"]],"周志榮":[[2015,"理事"]],"許哲維":[[2026,"理事"],[2026,"國際事務主委"]],"吳婉瑄":[[2025,"理事"],[2026,"監事"],[2026,"會擴主委"]],"賴麗如":[[2022,"理事"],[2023,"監事"]],"呂信益":[[2020,"理事"],[2021,"監事"]],"林志遠":[[2018,"理事"]],"吳志宏":[[2015,"理事"],[2016,"監事"]],"江志文":[[2014,"理事"]],"王昱昌":[[2012,"理事"],[2013,"監事"]],"陳家祥":[[2011,"理事"]],"李政學":[[2008,"理事"]],"許文義":[[2010,"監事"]],"李日賢":[[2022,"監事"]],"邱舜傑":[[2008,"監事"]],"張嘉瑞":[[2007,"監事"]],"簡帷芫":[[2025,"國際事務主委"]],"吳鼎鈞":[[2026,"月會聯誼主委"]],"黃柄捷":[[2026,"才能訓練主委"]],"陳泓俞":[[2026,"社區發展主委"],[2025,"會擴主委"]],"吳郁婷":[[2026,"運動休閒主委"],[2025,"編輯紀錄主委"]],"許常旭":[[2026,"公關主委"],[2025,"公關主委"]]}};
+const SHEET_ID = '1DR0ja05ZJrERHR0WVxUR4m5mseDlTHXCA562glKJEmM';
+const TYPES = ['理事會','監事會','月例會'];
+let DB = SNAPSHOT;
+
+/* ── 月份工具 ── */
+function ym(y,m){ return y+'-'+String(m).padStart(2,'0'); }
+function parseYm(s){ const [y,m]=s.split('-').map(Number); return [y,m]; }
+function cmp(a,b){ return a[0]!==b[0] ? a[0]-b[0] : a[1]-b[1]; }
+function monthsBetween(s,e){
+  let [y,m]=parseYm(s); const [ey,em]=parseYm(e); const out=[];
+  while(y<ey || (y===ey && m<=em)){ out.push([y,m]); m++; if(m>12){m=1;y++;} }
+  return out;
+}
+const ALL_MONTHS = (()=>{ const a=[]; for(const y of [2025,2026]) for(let m=1;m<=12;m++) a.push(ym(y,m)); return a; })();
+
+/* ── 選單 ── */
+const selFrom=document.getElementById('selFrom'), selTo=document.getElementById('selTo');
+for(const s of ALL_MONTHS){
+  selFrom.add(new Option(s.replace('-','/'), s));
+  selTo.add(new Option(s.replace('-','/'), s));
+}
+const PRESETS=[
+  {k:'election', t:'選務區間 2025/7～2026/6', f:'2025-07', to:'2026-06'},
+  {k:'h1', t:'2026 上半年', f:'2026-01', to:'2026-06'},
+  {k:'all', t:'全部至今', f:'2025-07', to:latestHeld()}
+];
+function latestHeld(){
+  let last='2025-07';
+  for(const Y of DB.years) for(const k in Y.held){ if(Y.held[k]){ const m=+k.split('-')[0]; const s=ym(Y.year,m); if(s>last) last=s; } }
+  return last;
+}
+let activePreset='election';
+function renderPresets(){
+  document.getElementById('presets').innerHTML = PRESETS.map(p=>
+    `<button class="btn small ghost ${activePreset===p.k?'on':''}" onclick="usePreset('${p.k}')">${p.t}</button>`).join('');
+}
+function usePreset(k){
+  const p=PRESETS.find(x=>x.k===k); activePreset=k;
+  selFrom.value=p.f; selTo.value=p.to; renderPresets(); render();
+}
+function presetOff(){ activePreset=''; renderPresets(); }
+
+/* ── 核心計算（重現試算表 SUMPRODUCT 規則，已對照選務資格審定 33/33 驗證） ── */
+function compute(range){
+  const map=new Map();
+  for(const Y of DB.years){
+    const inYear = range.filter(([y])=>y===Y.year);
+    if(!inYear.length) continue;
+    for(const mem of Y.members){
+      if(mem.role==='見習會員') continue;
+      const w=DB.params[mem.role]||null;
+      let r=map.get(mem.n);
+      if(!r){ r={n:mem.n, roles:[], ying:0, shi:0, marks:{}}; map.set(mem.n,r); }
+      r.roles.push({year:Y.year, role:mem.role||'—'});
+      for(const [,mm] of inYear){
+        for(const t of TYPES){
+          const held=!!Y.held[mm+'-'+t], att=!!mem.att[mm+'-'+t], wt=w?w[t]:0;
+          if(wt){ if(held) r.ying++; if(att) r.shi++; }
+          r.marks[ym(Y.year,mm)+'-'+t]={held,att,wt};
+        }
+      }
+    }
+  }
+  const rows=[...map.values()].filter(r=>r.ying>0);
+  rows.forEach(r=>r.rate=r.shi/r.ying);
+  rows.sort((a,b)=> b.rate-a.rate || b.shi-a.shi || a.n.localeCompare(b.n,'zh-Hant'));
+  return rows;
+}
+
+/* ── 排行渲染 ── */
+let rateFilter='all';
+const FILTERS=[['all','全部'],['80','≥80%（會長線）'],['75','≥75%'],['70','≥70%'],['lt','<70%']];
+function renderFilters(){
+  document.getElementById('filters').innerHTML=FILTERS.map(([k,t])=>
+    `<button class="btn small ghost ${rateFilter===k?'on':''}" onclick="rateFilter='${k}';render()">${t}</button>`).join('');
+}
+function barColor(rate){ return rate>=0.8?'var(--ok)':rate>=0.7?'var(--blue)':'var(--bad)'; }
+function roleLabel(r){
+  const u=[...new Set(r.roles.map(x=>x.role))];
+  if(u.length===1) return u[0];
+  return r.roles.map(x=>`${x.year} ${x.role}`).join(' → ');
+}
+function render(){
+  const from=selFrom.value, to=selTo.value;
+  if(from>to){ toast('起始月份不能晚於結束月份'); return; }
+  const range=monthsBetween(from,to);
+  const rows=compute(range);
+
+  // KPI：區間內已召開會議數
+  const heldN={理事會:0,監事會:0,月例會:0};
+  for(const Y of DB.years) for(const [y,m] of range){ if(y!==Y.year) continue; for(const t of TYPES) if(Y.held[m+'-'+t]) heldN[t]++; }
+  const avg=rows.length? rows.reduce((s,r)=>s+r.rate,0)/rows.length : 0;
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="v num">${heldN.理事會}/${heldN.監事會}/${heldN.月例會}</div><div class="k">理/監/例 會議數</div></div>
+    <div class="kpi"><div class="v num">${Math.round(avg*100)}%</div><div class="k">平均出席率</div></div>
+    <div class="kpi"><div class="v num">${rows.filter(r=>r.rate>=0.8).length}</div><div class="k">達 80% 人數</div></div>`;
+
+  const shown=rows.filter(r=>
+    rateFilter==='all' ? true :
+    rateFilter==='lt' ? r.rate<0.7 : r.rate>=(+rateFilter)/100);
+
+  document.getElementById('ranking').innerHTML = shown.length? shown.map((r,i)=>{
+    const pct=(r.rate*100);
+    return `<div class="rk" onclick="this.classList.toggle('open')">
+      <div class="row">
+        <div class="no num ${i<3?'top':''}">${i+1}</div>
+        <div class="grow"><div class="nm">${r.n}</div><div class="rl">${roleLabel(r)}</div></div>
+        <div>
+          <div class="pc num" style="color:${barColor(r.rate)}">${pct.toFixed(1).replace(/\.0$/,'')}%</div>
+          <div class="frac num">${r.shi}/${r.ying}</div>
+        </div>
+      </div>
+      <div class="bar"><i style="width:${Math.min(100,pct)}%;background:${barColor(r.rate)}"></i></div>
+      <div class="detail">${detailTable(r,range)}</div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;color:var(--muted);padding:18px 0">此區間沒有符合的會員</div>';
+
+  renderTrainees(); renderCands();
+  renderPresets(); renderFilters();
+}
+function detailTable(r,range){
+  let head='<th></th>', rowsHtml={理事會:'',監事會:'',月例會:''};
+  for(const [y,m] of range){
+    head+=`<th class="num">${String(y).slice(2)}/${m}</th>`;
+    for(const t of TYPES){
+      const k=ym(y,m)+'-'+t, mk=r.marks[k]||{held:false,att:false,wt:0};
+      let sym='<span class="mk-o">—</span>';
+      if(mk.wt && mk.held) sym = mk.att? '<span class="mk-y">✓</span>':'<span class="mk-n">✗</span>';
+      else if(mk.att) sym='<span class="mk-g">◐</span>';
+      rowsHtml[t]+=`<td>${sym}</td>`;
+    }
+  }
+  return `<div class="tt"><table><tr>${head}</tr>${TYPES.map(t=>`<tr><th>${t}</th>${rowsHtml[t]}</tr>`).join('')}</table></div>`;
+}
+
+/* ── 見習會員追蹤（不受區間影響，看完整歷程） ── */
+const PASSKEY='jci-att-passmonth', EXTRAKEY='jci-att-extras';
+function getPass(){ try{ return JSON.parse(localStorage.getItem(PASSKEY))||{}; }catch(e){ return {}; } }
+function setPass(n,v){ const p=getPass(); if(v) p[n]=v; else delete p[n]; localStorage.setItem(PASSKEY,JSON.stringify(p)); render(); }
+function getExtras(){ try{ return JSON.parse(localStorage.getItem(EXTRAKEY))||{}; }catch(e){ return {}; } }
+function setExtra(n,k,v){ const e=getExtras(); (e[n]=e[n]||{})[k]=v; localStorage.setItem(EXTRAKEY,JSON.stringify(e)); render(); }
+const EXTRA_ITEMS=[['fee','繳清見習會費']];
+function addMonths(pm,k){ let [y,m]=[pm[0],pm[1]+k]; while(m>12){m-=12;y++;} return `${y}/${m}`; }
+function renderTrainees(){
+  const pass=getPass();
+  const trs=new Map();
+  for(const Y of DB.years) for(const mem of Y.members){
+    if(mem.role!=='見習會員') continue;
+    let r=trs.get(mem.n); if(!r){ r={n:mem.n, board:[], monthly:[]}; trs.set(mem.n,r); }
+    for(const k in mem.att){
+      const [m,t]=[+k.split('-')[0], k.split('-')[1]];
+      if(t==='理事會') r.board.push([Y.year,m]);
+      if(t==='月例會') r.monthly.push([Y.year,m]);
+    }
+  }
+  const list=[...trs.values()], extras=getExtras();
+  document.getElementById('trainees').innerHTML = list.length? list.map(r=>{
+    const p=pass[r.n]||'';
+    const pm = p? parseYm(p) : null;
+    const board = pm? r.board.filter(x=>cmp(x,pm)>0) : r.board;
+    const monthly = pm? r.monthly.filter(x=>cmp(x,pm)>=0) : r.monthly;
+    const b=Math.min(2,board.length), mo=Math.min(2,monthly.length);
+    const ex = extras[r.n]||{};
+    const attOk = board.length>=2 && monthly.length>=2;
+    const exOk = EXTRA_ITEMS.every(([k])=>ex[k]);
+    const dot=(k,n)=> '●'.repeat(k)+'○'.repeat(Math.max(0,n-k));
+    let deadline='';
+    if(pm) deadline=`・基本至 ${addMonths(pm,2)}・最長至 ${addMonths(pm,6)}`;
+    const chip = attOk&&exOk ? '<span class="chip ok">全數達成・可排入理事會</span>'
+      : attOk ? '<span class="chip info">出席達成</span>'
+      : p ? '<span class="chip warn">進行中</span>' : '<span class="chip line">未設通過月</span>';
+    const exHtml = EXTRA_ITEMS.map(([k,t])=>`<label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;margin-right:10px">
+      <input type="checkbox" ${ex[k]?'checked':''} onchange="setExtra('${r.n}','${k}',this.checked)" style="accent-color:var(--ok)">${t}</label>`).join('');
+    const opts = ALL_MONTHS.map(s=>`<option value="${s}" ${s===p?'selected':''}>${s.replace('-','/')}</option>`).join('');
+    return `<div class="trc">
+      <div class="row">
+        <div class="grow"><b>${r.n}</b>
+          <span style="font-size:12px;color:var(--muted)" class="num">${deadline}</span></div>
+        ${chip}
+      </div>
+      <div class="row" style="margin-top:6px;gap:16px">
+        <div>理事會 <span class="dots num" style="color:var(--blue)">${dot(b,2)}</span> <span class="num" style="font-size:12px">${board.length}/2</span></div>
+        <div>月例會 <span class="dots num" style="color:var(--blue)">${dot(mo,2)}</span> <span class="num" style="font-size:12px">${monthly.length}/2</span></div>
+      </div>
+      <div style="margin-top:7px">${exHtml}</div>
+      <div class="row" style="margin-top:8px">
+        <label style="font-size:12px;color:var(--muted)">通過月份</label>
+        <select onchange="setPass('${r.n}', this.value)" style="font-size:12px;padding:4px 6px">
+          <option value="">未設定（全數計入）</option>${opts}
+        </select>
+        <span style="font-size:11px;color:var(--muted)">出席月：理 ${r.board.map(x=>x[1]+'月').join('、')||'—'}／例 ${r.monthly.map(x=>x[1]+'月').join('、')||'—'}</span>
+      </div>
+    </div>`;
+  }).join('') : '<div class="note">目前名單中沒有見習會員</div>';
+}
+
+/* ── 同步最新（gviz JSONP，正式部署／本機開啟可用） ── */
+let pending={};
+const ROSTER_ID='1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y';
+function syncLive(){
+  toast('連線 05-出席率管理＆02-會員名冊…');
+  pending={};
+  fetchSheet(SHEET_ID,'今年度','cbThis'); fetchSheet(SHEET_ID,'前年度','cbPrev'); fetchSheet(SHEET_ID,'參數設定','cbParam');
+  fetchSheet(SHEET_ID,'歷屆理監事職務紀錄','cbHist'); fetchSheet(ROSTER_ID,'會員一覽（不可刪除）','cbRoster');
+}
+function fetchSheet(id, name, cb){
+  const s=document.createElement('script');
+  s.src=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?sheet=${encodeURIComponent(name)}&headers=0&tqx=out:json;responseHandler:${cb}&_=${Date.now()}`;
+  s.onerror=()=>toast('此環境擋外部連線，維持使用內建快照（本機開啟或部署後可同步）');
+  document.body.appendChild(s);
+}
+function grid(resp){
+  return resp.table.rows.map(r=>(r.c||[]).map(c=>c&&c.v!=null?String(c.v):''));
+}
+function parseYearGrid(g, year){
+  const colFor=(m,ti)=> (m<=6? 2+(m-1)*3+ti : 23+(m-7)*3+ti); // 0-based: C=2, X=23
+  const held={}, members=[];
+  for(let m=1;m<=12;m++) TYPES.forEach((t,ti)=>{ held[m+'-'+t] = !!((g[0]||[])[colFor(m,ti)]||'').trim(); });
+  for(let r=3;r<g.length;r++){
+    const role=(g[r][0]||'').trim(), name=(g[r][1]||'').trim();
+    if(!name) continue;
+    const att={};
+    for(let m=1;m<=12;m++) TYPES.forEach((t,ti)=>{ const v=(g[r][colFor(m,ti)]||''); if(v!=='') att[m+'-'+t]=1; });
+    members.push({n:name, role, att});
+  }
+  return {year, held, members};
+}
+window.cbThis =resp=>{ pending.this = parseYearGrid(grid(resp),2026); tryAssemble(); };
+window.cbPrev =resp=>{ pending.prev = parseYearGrid(grid(resp),2025); tryAssemble(); };
+window.cbParam=resp=>{
+  const g=grid(resp), params={};
+  for(let r=4;r<g.length;r++){
+    const role=(g[r][0]||'').trim(); if(!role) continue;
+    params[role]={理事會:+g[r][1]||0, 監事會:+g[r][2]||0, 月例會:+g[r][3]||0};
+  }
+  pending.params=params; tryAssemble();
+};
+window.cbHist=resp=>{
+  const g=grid(resp), years={}, history={};
+  (g[0]||[]).forEach((v,c)=>{ if(c>0 && v && +String(v)) years[c]=+String(v); });
+  for(let r=1;r<g.length;r++){
+    const role=(g[r][0]||'').trim(); if(!role) continue;
+    for(const c in years){
+      const n=(g[r][c]||'').trim();
+      if(n) (history[n]=history[n]||[]).push([years[c], role]);
+    }
+  }
+  pending.history=history; tryAssemble();
+};
+window.cbRoster=resp=>{
+  const g=grid(resp), sen={};
+  for(let r=1;r<g.length;r++){
+    let name=(g[r][0]||'').trim(); if(!name||name==='姓名') continue;
+    const duty=(g[r][3]||'');
+    if(/歿|離會|退會/.test(name) || /前會員/.test(duty)) continue;
+    name=name.replace(/[（(][^）)]*[）)]/g,'').trim();
+    const m=String(g[r][11]||'').match(/(\d+)年/);
+    if(m) sen[name]=+m[1];
+  }
+  pending.seniority=sen; tryAssemble();
+};
+function tryAssemble(){
+  if(!(pending.this&&pending.prev&&pending.params&&pending.history&&pending.seniority)) return;
+  DB={snapshot:'即時', params:pending.params, years:[pending.prev,pending.this], history:pending.history, seniority:pending.seniority};
+  initCandSelects();
+  const d=new Date();
+  document.getElementById('dataStatus').textContent=`已同步最新（${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}）`;
+  PRESETS[2].to=latestHeld();
+  toast('✓ 已同步最新試算表資料');
+  render();
+}
+
+/* ── 選務 候選人資格判定（章程第廿四～廿七條） ── */
+const RULES={
+  '會長':{age:3,rate:.80,both:1,prior:'chair',renew:1,note:'章程另要求：曾出席總會會員代表大會（請人工確認）'},
+  '副會長':{age:2,rate:.75,both:1,prior:'board2',renew:0,note:'曾獲總會或分會優秀會員獎者，不受曾任職務資格限制'},
+  '常務監事':{age:2,rate:.75,both:0,prior:'board2',renew:0,note:'由當屆監事互選'},
+  '監事':{age:2,rate:.75,both:0,prior:'boardmember',renew:0,note:''},
+  '秘書長':{age:1,rate:.70,both:0,prior:'chairman',renew:1,note:''},
+  '財務長':{age:1,rate:.70,both:0,prior:'chairman',renew:1,note:''},
+  '理事':{age:1,rate:.70,both:0,prior:'chairman',renew:0,note:''}
+};
+const PRIOR_LABEL={chair:'曾任常務級職位（副會長／常務理事 或 常務監事）', board2:'曾任 理事及監事各一任，或理事二任（副會長計入理事、常務監事計入監事）', boardmember:'曾任理事會成員（會長/副會長/秘/財/理事）', chairman:'曾任委員會主任委員'};
+const FAMILY={理事:['理事','副會長','常務理事'], 監事:['監事','常務監事']};
+const CANDKEY='jci-att-cands';
+function getCands(){ try{ return JSON.parse(localStorage.getItem(CANDKEY))||[]; }catch(e){ return []; } }
+function saveCands(c){ localStorage.setItem(CANDKEY,JSON.stringify(c)); }
+function addCand(){
+  const role=document.getElementById('candRole').value, name=document.getElementById('candName').value;
+  if(!name){ toast('請選擇候選人'); return; }
+  const c=getCands();
+  if(c.some(x=>x.role===role&&x.name===name)){ toast('已在判定清單中'); return; }
+  c.push({role,name}); saveCands(c); renderCands();
+}
+function rmCand(i){ const c=getCands(); c.splice(i,1); saveCands(c); renderCands(); }
+function rateOfYear(name, year){
+  const rows=compute(monthsBetween(year+'-01', year+'-12'));
+  const r=rows.find(x=>x.n===name);
+  return r? {rate:r.rate, shi:r.shi, ying:r.ying} : null;
+}
+function historyOf(name){ return (DB.history&&DB.history[name])||[]; }
+function priorCheck(kind, name){
+  const H=historyOf(name);
+  const yearsIn=fam=>new Set(H.filter(([,r])=>FAMILY[fam].includes(r)).map(([y])=>y)).size;
+  const has=role=>H.some(([,r])=>r===role);
+  if(kind==='chair')  return {ok: has('副會長')||has('常務理事')||has('常務監事')};
+  if(kind==='board2') return {ok: (yearsIn('理事')>=1&&yearsIn('監事')>=1)||yearsIn('理事')>=2};
+  if(kind==='boardmember') return {ok: ['會長','副會長','秘書長','財務長','理事'].some(has)};
+  if(kind==='chairman'){
+    const found=H.some(([,r])=>r.includes('主委'));
+    return found? {ok:true} : {ok:false, warn:true, msg:'查無主委紀錄（僅 2025–26 有登載），請人工確認'};
+  }
+  return {ok:false};
+}
+function MK(st){ return st==='ok'?'<span class="mk-y">✓</span>':st==='warn'?'<span class="mk-g">⚠</span>':'<span class="mk-n">✗</span>'; }
+function renderCands(){
+  const cands=getCands();
+  const thisYear=2026, lastYear=2025;
+  document.getElementById('candList').innerHTML = cands.map((c,i)=>{
+    const R=RULES[c.role]; const checks=[];
+    // 會齡
+    const sn=(DB.seniority||{})[c.name];
+    checks.push(sn==null
+      ? {st:'warn', t:`會齡 ≥ ${R.age} 年`, v:'名冊查無會齡，請人工確認'}
+      : {st: sn>=R.age?'ok':'bad', t:`會齡 ≥ ${R.age} 年`, v:`${sn} 年`});
+    // 出席率
+    const rNow=rateOfYear(c.name,thisYear), rPrev=rateOfYear(c.name,lastYear);
+    const pct=x=>x? (x.rate*100).toFixed(1).replace(/\.0$/,'')+`%（${x.shi}/${x.ying}）`:'無出席紀錄';
+    checks.push(rNow
+      ? {st: rNow.rate>=R.rate?'ok':'bad', t:`競選該年度出席率 ≥ ${R.rate*100}%`, v:pct(rNow)}
+      : {st:'warn', t:`競選該年度出席率 ≥ ${R.rate*100}%`, v:'2026 無出席紀錄'});
+    if(R.both) checks.push(rPrev
+      ? {st: rPrev.rate>=R.rate?'ok':'bad', t:`上年度出席率 ≥ ${R.rate*100}%`, v:pct(rPrev)}
+      : {st:'warn', t:`上年度出席率 ≥ ${R.rate*100}%`, v:'2025 無出席紀錄'});
+    // 曾任職務
+    const pr=priorCheck(R.prior, c.name);
+    const H=historyOf(c.name);
+    const hist=[...new Set(H.map(([y,r])=>r))].map(r=>{
+      const ys=H.filter(([,rr])=>rr===r).map(([y])=>y).sort();
+      return `${r}（${ys.join('、')}）`;
+    }).join('、')||'無紀錄';
+    checks.push({st: pr.ok?'ok':(pr.warn?'warn':'bad'), t:PRIOR_LABEL[R.prior], v: pr.msg||hist});
+    // 連任限制
+    if(R.renew){
+      const cur=H.some(([y,r])=>y===thisYear&&r===c.role);
+      checks.push({st: cur?'bad':'ok', t:'不得連任', v: cur?`現任 ${c.role}，不得連任`:'非現任'});
+    }
+    const anyBad=checks.some(x=>x.st==='bad'), anyWarn=checks.some(x=>x.st==='warn');
+    const verdict = anyBad? '<span class="chip bad">不符資格</span>' : anyWarn? '<span class="chip warn">需人工確認</span>' : '<span class="chip ok">符合資格</span>';
+    return `<div class="trc">
+      <div class="row">
+        <div class="grow"><span class="chip info">${c.role}</span> <b style="font-size:15px">${c.name}</b></div>
+        ${verdict}
+        <button class="btn small ghost" onclick="rmCand(${i})" aria-label="移除">✕</button>
+      </div>
+      <div style="margin-top:8px">${checks.map(x=>`
+        <div class="row" style="align-items:flex-start;padding:4px 0;border-bottom:1px dashed var(--line)">
+          <div style="width:18px;text-align:center">${MK(x.st)}</div>
+          <div class="grow" style="font-size:13px">${x.t}<div style="font-size:12px;color:var(--muted)" class="num">${x.v}</div></div>
+        </div>`).join('')}
+      ${R.note?`<div class="note" style="margin-top:6px">${R.note}</div>`:''}
+      </div>
+    </div>`;
+  }).join('') || '<div class="note">選擇職務與候選人後按「判定」，可加入多位比較。</div>';
+}
+function initCandSelects(){
+  const rs=document.getElementById('candRole');
+  rs.innerHTML=Object.keys(RULES).map(r=>`<option>${r}</option>`).join('');
+  const names=new Set(Object.keys(DB.seniority||{}));
+  for(const Y of DB.years) for(const m of Y.members) if(m.role!=='見習會員') names.add(m.n);
+  const ns=document.getElementById('candName');
+  ns.innerHTML='<option value="">選擇候選人…</option>'+[...names].sort((a,b)=>a.localeCompare(b,'zh-Hant')).map(n=>`<option>${n}</option>`).join('');
+}
+
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),3000);
+}
+
+document.getElementById('dataStatus').textContent=`資料快照 ${DB.snapshot}・可按右上同步`;
+initCandSelects();
+usePreset('election');
+</script>
+
+</body>
+</html>

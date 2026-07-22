@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>大園國際青年商會｜會員大會郵寄標籤產生器（鶴屋 No.87）</title>
+<style>
+  :root { --labelW: 105mm; --labelH: 33mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: #eef1f5; color: #222; }
+
+  /* ===== 操作區 ===== */
+  #app { max-width: 980px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { font-size: 16px; margin: 0 0 10px; color: #1f4e79; }
+  button { font-size: 15px; padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; }
+  button.primary { background: #1f4e79; color: #fff; }
+  button.primary:disabled { background: #9db3c8; cursor: not-allowed; }
+  button.ghost { background: #e8eef5; color: #1f4e79; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .opts { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; font-size: 14px; margin-top: 12px; }
+  .opts label { display: flex; align-items: center; gap: 6px; }
+  .opts input[type=number] { width: 60px; padding: 4px; }
+  .opts select { padding: 4px; }
+  #status { font-size: 14px; margin-top: 10px; }
+  #status .warn { color: #b45309; }
+  #status .err { color: #c00000; }
+  #status .ok { color: #15803d; }
+
+  table.members { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.members th, table.members td { border-bottom: 1px solid #e5e7eb; padding: 5px 8px; text-align: left; }
+  table.members th { background: #f3f6fa; position: sticky; top: 0; }
+  table.members input.zip { width: 52px; padding: 3px; text-align: center; }
+  table.members input.addr { width: 100%; padding: 3px; }
+  table.members tr.nozip input.zip { border: 2px solid #c00000; background: #fff1f1; }
+  .tablewrap { max-height: 420px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 6px; }
+  .count { font-size: 13px; color: #555; margin: 8px 0 0; }
+
+  /* ===== 標籤紙 ===== */
+  #preview { margin-top: 8px; }
+  .sheet {
+    width: 210mm; height: 297mm; background: #fff;
+    display: grid; grid-template-columns: var(--gridCols, var(--labelW) var(--labelW));
+    grid-auto-rows: var(--labelH);
+    padding: var(--padV, 0) var(--padH, 0); box-sizing: border-box;
+    margin: 0 auto 20px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .label {
+    width: var(--labelW); height: var(--labelH);
+    padding: 1.5mm 4mm;
+    display: flex; flex-direction: column; justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    font-family: "標楷體", "BiauKai", "DFKai-SB", "Kaiti TC", serif;
+    line-height: 1.32;
+  }
+  /* 字級依中華郵政「地址名條」規範：地址字體長寬≥4mm(≈11.3pt)、
+     郵遞區號字高2.4–6mm且數字間隔≥0.6mm、行間隔≥2mm。長地址自動換行，不縮小字體。 */
+  .label .zip  { font-size: 12pt; font-weight: bold; letter-spacing: 0.7mm; }
+  .label .addr { font-size: 11.5pt; line-height: 1.5; overflow-wrap: anywhere; }
+  .label .name { font-size: 15pt; font-weight: bold; margin-top: 1mm; }
+  .label .name .title { font-size: 10pt; font-weight: normal; margin-right: 2mm; }
+
+  /* 螢幕預覽時顯示格線；列印預設不印 */
+  @media screen { .label { outline: 1px dashed #c9ced6; outline-offset: -1px; } }
+  body.gridprint .label { outline: 1px dashed #999 !important; outline-offset: -1px; }
+
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    body { background: #fff; }
+    #app { display: none; }
+    #preview { margin: 0; }
+    .sheet { box-shadow: none; margin: 0; page-break-after: always; }
+    .sheet:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>會員大會郵寄標籤產生器</h1>
+  <div class="sub">
+    大園國際青年商會秘書處｜支援標籤紙：鶴屋 87 號（33×105mm・18格）、62 號（27×105mm・22格）、自訂尺寸｜
+    資料來源：<a href="https://docs.google.com/spreadsheets/d/1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y/" target="_blank">會員名冊試算表</a>
+    <div style="font-size:11px;color:#aaa;margin-top:4px">2026年秘書長吳瑞田製作</div>
+  </div>
+
+  <div class="card">
+    <h2>步驟一：載入會員名冊</h2>
+    <div class="toolbar">
+      <button class="primary" id="btnLoad" onclick="loadRoster()">載入會員名冊</button>
+      <span id="status">尚未載入。</span>
+    </div>
+  </div>
+
+  <div class="card" id="cardMembers" style="display:none">
+    <h2>步驟二：確認名單與郵遞區號</h2>
+    <div class="toolbar">
+      <button class="ghost" onclick="setAll(true)">全選</button>
+      <button class="ghost" onclick="setAll(false)">全不選</button>
+      <span class="count" id="countInfo"></span>
+    </div>
+    <p style="font-size:13px;color:#666;margin:8px 0">
+      郵遞區號自動查詢 <b>3+3 碼</b>（中華郵政資料）；查不到路段時以行政區 3 碼代替（郵局仍可投遞）。
+      <b style="color:#c00000">紅框</b>代表完全判斷不出來，請手動填寫；郵遞與地址欄都可直接修改（只影響列印，不會改動名冊）。
+      <span id="zipStatus"></span>
+    </p>
+    <div class="tablewrap">
+      <table class="members">
+        <thead><tr><th style="width:36px"></th><th style="width:90px">姓名</th><th style="width:150px">現任職務</th><th style="width:64px">郵遞</th><th>地址</th></tr></thead>
+        <tbody id="memberRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="cardOpts" style="display:none">
+    <h2>步驟三：產生標籤並列印</h2>
+    <div class="opts" style="margin-top:0;margin-bottom:8px">
+      <label>標籤紙：
+        <select id="optSpec" onchange="document.getElementById('cusBox').style.display=this.value==='custom'?'':'none';updateCount()">
+          <option value="87" selected>鶴屋 87 號（B33105）33×105mm・18格</option>
+          <option value="62">鶴屋 62 號（B27105）27×105mm・22格</option>
+          <option value="custom">自訂尺寸…</option>
+        </select>
+      </label>
+      <span id="cusBox" style="display:none">
+        寬 <input type="number" id="cusW" value="105" style="width:56px"> mm ×
+        高 <input type="number" id="cusH" value="33" style="width:56px"> mm，
+        <input type="number" id="cusCols" value="2" style="width:44px"> 欄 ×
+        <input type="number" id="cusRows" value="9" style="width:44px"> 列（版面自動置中）
+      </span>
+    </div>
+    <div class="opts">
+      <label>敬稱：
+        <select id="optHonor">
+          <option value="收" selected>收</option>
+          <option value="先生 收">先生 收</option>
+          <option value="女士 收">女士 收</option>
+          <option value="會兄/會姊 收">會兄/會姊 收</option>
+          <option value="大啟">大啟</option>
+          <option value="鈞啟">鈞啟</option>
+          <option value="">（不加）</option>
+        </select>
+      </label>
+      <label>起始格位（沿用剩半張的標籤紙時，跳過已用格數）：
+        <input type="number" id="optOffset" min="0" max="17" value="0">
+      </label>
+      <span style="color:#666">字體大小固定（中華郵政規範：地址字體不得小於 4mm，過長地址會自動換行）</span>
+      <label><input type="checkbox" id="optTitle" checked>標籤加註職務／榮譽頭銜</label>
+      <label><input type="checkbox" id="optGrid">連格線一起列印（僅供試印對位用）</label>
+    </div>
+    <div class="toolbar" style="margin-top:14px">
+      <button class="primary" onclick="generate()">產生標籤預覽</button>
+      <button class="primary" id="btnPrint" onclick="window.print()" disabled>列印／另存 PDF</button>
+      <span id="genInfo" style="font-size:14px;color:#555"></span>
+    </div>
+    <p style="font-size:13px;color:#b45309;margin:10px 0 0">
+      ⚠ 列印設定務必選擇：<b>縮放 100%（實際大小）、邊界「無」、關閉頁首頁尾</b>，否則會對不準格子。第一次使用請先勾「連格線一起列印」印一張白紙，對著標籤紙照光檢查對位。<br>
+      ⚠ 黏貼到信封時（中華郵政規範）：信封<b>下緣保留 20mm</b> 不要貼（供機器噴印條碼），標籤傾斜勿超過 5 度。
+    </p>
+  </div>
+</div>
+
+<div id="preview"></div>
+
+<script>
+const SHEET_ID = '1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y'; // 會員名冊試算表 ID（換屆若換檔案，改這裡）
+
+/* ===== 標籤紙規格（皆為 A4）。新增規格：照格式加一行即可 ===== */
+const LABEL_SPECS = {
+  '87': { name: '鶴屋 87 號（B33105）33×105mm・18格', w: 105, h: 33, cols: 2, rows: 9 },
+  '62': { name: '鶴屋 62 號（B27105）27×105mm・22格', w: 105, h: 27, cols: 2, rows: 11 },
+  'custom': { name: '自訂', w: 105, h: 33, cols: 2, rows: 9 },
+};
+function currentSpec() {
+  const key = document.getElementById('optSpec').value;
+  if (key !== 'custom') return LABEL_SPECS[key];
+  return {
+    name: '自訂',
+    w: parseFloat(document.getElementById('cusW').value) || 105,
+    h: parseFloat(document.getElementById('cusH').value) || 33,
+    cols: parseInt(document.getElementById('cusCols').value) || 2,
+    rows: parseInt(document.getElementById('cusRows').value) || 9,
+  };
+}
+const perSheet = () => { const s = currentSpec(); return s.cols * s.rows; };
+const GATE_PASSWORD = '1027'; // 進入密碼（與簽到系統相同）；設為空字串 '' 可停用密碼
+
+// 密碼閘門：因工具會列出全體會員姓名住址，公開網址必須有基本門檻
+(function gate() {
+  if (!GATE_PASSWORD || localStorage.getItem('jciLabelAuth') === GATE_PASSWORD) return;
+  document.addEventListener('DOMContentLoaded', () => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:#1f2937;z-index:9999;display:flex;align-items:center;justify-content:center';
+    ov.innerHTML = '<div style="background:#fff;border-radius:12px;padding:32px 40px;text-align:center;max-width:320px">' +
+      '<div style="font-size:18px;font-weight:bold;margin-bottom:6px">秘書處內部工具</div>' +
+      '<div style="font-size:13px;color:#666;margin-bottom:16px">本工具含會員個資，請輸入密碼</div>' +
+      '<input id="gatePw" type="password" inputmode="numeric" style="font-size:18px;padding:8px;width:140px;text-align:center;border:1px solid #ccc;border-radius:6px">' +
+      '<div id="gateErr" style="color:#c00000;font-size:13px;height:18px;margin-top:6px"></div>' +
+      '<button id="gateBtn" style="font-size:15px;padding:8px 28px;border:none;border-radius:6px;background:#1f4e79;color:#fff;cursor:pointer">進入</button></div>';
+    document.body.appendChild(ov);
+    const pw = ov.querySelector('#gatePw');
+    const tryEnter = () => {
+      if (pw.value === GATE_PASSWORD) { localStorage.setItem('jciLabelAuth', GATE_PASSWORD); ov.remove(); }
+      else { ov.querySelector('#gateErr').textContent = '密碼錯誤'; pw.select(); }
+    };
+    ov.querySelector('#gateBtn').addEventListener('click', tryEnter);
+    pw.addEventListener('keydown', e => { if (e.key === 'Enter') tryEnter(); });
+    pw.focus();
+  });
+})();
+
+/* ===== 台灣 3 碼郵遞區號（縣市 → 行政區）===== */
+const ZIP3 = {
+"台北市":{"中正區":"100","大同區":"103","中山區":"104","松山區":"105","大安區":"106","萬華區":"108","信義區":"110","士林區":"111","北投區":"112","內湖區":"114","南港區":"115","文山區":"116"},
+"基隆市":{"仁愛區":"200","信義區":"201","中正區":"202","中山區":"203","安樂區":"204","暖暖區":"205","七堵區":"206"},
+"新北市":{"萬里區":"207","金山區":"208","板橋區":"220","汐止區":"221","深坑區":"222","石碇區":"223","瑞芳區":"224","平溪區":"226","雙溪區":"227","貢寮區":"228","新店區":"231","坪林區":"232","烏來區":"233","永和區":"234","中和區":"235","土城區":"236","三峽區":"237","樹林區":"238","鶯歌區":"239","三重區":"241","新莊區":"242","泰山區":"243","林口區":"244","蘆洲區":"247","五股區":"248","八里區":"249","淡水區":"251","三芝區":"252","石門區":"253"},
+"宜蘭縣":{"宜蘭市":"260","頭城鎮":"261","礁溪鄉":"262","壯圍鄉":"263","員山鄉":"264","羅東鎮":"265","三星鄉":"266","大同鄉":"267","五結鄉":"268","冬山鄉":"269","蘇澳鎮":"270","南澳鄉":"272"},
+"新竹市":{"東區":"300","北區":"300","香山區":"300"},
+"新竹縣":{"竹北市":"302","湖口鄉":"303","新豐鄉":"304","新埔鎮":"305","關西鎮":"306","芎林鄉":"307","寶山鄉":"308","竹東鎮":"310","五峰鄉":"311","橫山鄉":"312","尖石鄉":"313","北埔鄉":"314","峨眉鄉":"315"},
+"桃園市":{"中壢區":"320","平鎮區":"324","龍潭區":"325","楊梅區":"326","新屋區":"327","觀音區":"328","桃園區":"330","龜山區":"333","八德區":"334","大溪區":"335","復興區":"336","大園區":"337","蘆竹區":"338"},
+"苗栗縣":{"竹南鎮":"350","頭份市":"351","三灣鄉":"352","南庄鄉":"353","獅潭鄉":"354","後龍鎮":"356","通霄鎮":"357","苑裡鎮":"358","苗栗市":"360","造橋鄉":"361","頭屋鄉":"362","公館鄉":"363","大湖鄉":"364","泰安鄉":"365","銅鑼鄉":"366","三義鄉":"367","西湖鄉":"368","卓蘭鎮":"369"},
+"台中市":{"中區":"400","東區":"401","南區":"402","西區":"403","北區":"404","北屯區":"406","西屯區":"407","南屯區":"408","太平區":"411","大里區":"412","霧峰區":"413","烏日區":"414","豐原區":"420","后里區":"421","石岡區":"422","東勢區":"423","和平區":"424","新社區":"426","潭子區":"427","大雅區":"428","神岡區":"429","大肚區":"432","沙鹿區":"433","龍井區":"434","梧棲區":"435","清水區":"436","大甲區":"437","外埔區":"438","大安區":"439"},
+"彰化縣":{"彰化市":"500","芬園鄉":"502","花壇鄉":"503","秀水鄉":"504","鹿港鎮":"505","福興鄉":"506","線西鄉":"507","和美鎮":"508","伸港鄉":"509","員林市":"510","社頭鄉":"511","永靖鄉":"512","埔心鄉":"513","溪湖鎮":"514","大村鄉":"515","埔鹽鄉":"516","田中鎮":"520","北斗鎮":"521","田尾鄉":"522","埤頭鄉":"523","溪州鄉":"524","竹塘鄉":"525","二林鎮":"526","大城鄉":"527","芳苑鄉":"528","二水鄉":"530"},
+"南投縣":{"南投市":"540","中寮鄉":"541","草屯鎮":"542","國姓鄉":"544","埔里鎮":"545","仁愛鄉":"546","名間鄉":"551","集集鎮":"552","水里鄉":"553","魚池鄉":"555","信義鄉":"556","竹山鎮":"557","鹿谷鄉":"558"},
+"雲林縣":{"斗南鎮":"630","大埤鄉":"631","虎尾鎮":"632","土庫鎮":"633","褒忠鄉":"634","東勢鄉":"635","台西鄉":"636","崙背鄉":"637","麥寮鄉":"638","斗六市":"640","林內鄉":"643","古坑鄉":"646","莿桐鄉":"647","西螺鎮":"648","二崙鄉":"649","北港鎮":"651","水林鄉":"652","口湖鄉":"653","四湖鄉":"654","元長鄉":"655"},
+"嘉義市":{"東區":"600","西區":"600"},
+"嘉義縣":{"番路鄉":"602","梅山鄉":"603","竹崎鄉":"604","阿里山鄉":"605","中埔鄉":"606","大埔鄉":"607","水上鄉":"608","鹿草鄉":"611","太保市":"612","朴子市":"613","東石鄉":"614","六腳鄉":"615","新港鄉":"616","民雄鄉":"621","大林鎮":"622","溪口鄉":"623","義竹鄉":"624","布袋鎮":"625"},
+"台南市":{"中西區":"700","東區":"701","南區":"702","北區":"704","安平區":"708","安南區":"709","永康區":"710","歸仁區":"711","新化區":"712","左鎮區":"713","玉井區":"714","楠西區":"715","南化區":"716","仁德區":"717","關廟區":"718","龍崎區":"719","官田區":"720","麻豆區":"721","佳里區":"722","西港區":"723","七股區":"724","將軍區":"725","學甲區":"726","北門區":"727","新營區":"730","後壁區":"731","白河區":"732","東山區":"733","六甲區":"734","下營區":"735","柳營區":"736","鹽水區":"737","善化區":"741","大內區":"742","山上區":"743","新市區":"744","安定區":"745"},
+"高雄市":{"新興區":"800","前金區":"801","苓雅區":"802","鹽埕區":"803","鼓山區":"804","旗津區":"805","前鎮區":"806","三民區":"807","楠梓區":"811","小港區":"812","左營區":"813","仁武區":"814","大社區":"815","岡山區":"820","路竹區":"821","阿蓮區":"822","田寮區":"823","燕巢區":"824","橋頭區":"825","梓官區":"826","彌陀區":"827","永安區":"828","湖內區":"829","鳳山區":"830","大寮區":"831","林園區":"832","鳥松區":"833","大樹區":"840","旗山區":"842","美濃區":"843","六龜區":"844","內門區":"845","杉林區":"846","甲仙區":"847","桃源區":"848","那瑪夏區":"849","茂林區":"851","茄萣區":"852"},
+"屏東縣":{"屏東市":"900","三地門鄉":"901","霧台鄉":"902","瑪家鄉":"903","九如鄉":"904","里港鄉":"905","高樹鄉":"906","鹽埔鄉":"907","長治鄉":"908","麟洛鄉":"909","竹田鄉":"911","內埔鄉":"912","萬丹鄉":"913","潮州鎮":"920","泰武鄉":"921","來義鄉":"922","萬巒鄉":"923","崁頂鄉":"924","新埤鄉":"925","南州鄉":"926","林邊鄉":"927","東港鎮":"928","琉球鄉":"929","佳冬鄉":"931","新園鄉":"932","枋寮鄉":"940","枋山鄉":"941","春日鄉":"942","獅子鄉":"943","車城鄉":"944","牡丹鄉":"945","恆春鎮":"946","滿州鄉":"947"},
+"台東縣":{"台東市":"950","綠島鄉":"951","蘭嶼鄉":"952","延平鄉":"953","卑南鄉":"954","鹿野鄉":"955","關山鎮":"956","海端鄉":"957","池上鄉":"958","東河鄉":"959","成功鎮":"961","長濱鄉":"962","太麻里鄉":"963","金峰鄉":"964","大武鄉":"965","達仁鄉":"966"},
+"花蓮縣":{"花蓮市":"970","新城鄉":"971","秀林鄉":"972","吉安鄉":"973","壽豐鄉":"974","鳳林鎮":"975","光復鄉":"976","豐濱鄉":"977","瑞穗鄉":"978","萬榮鄉":"979","玉里鎮":"981","卓溪鄉":"982","富里鄉":"983"},
+"澎湖縣":{"馬公市":"880","西嶼鄉":"881","望安鄉":"882","七美鄉":"883","白沙鄉":"884","湖西鄉":"885"},
+"金門縣":{"金沙鎮":"890","金湖鎮":"891","金寧鄉":"892","金城鎮":"893","烈嶼鄉":"894","烏坵鄉":"896"},
+"連江縣":{"南竿鄉":"209","北竿鄉":"210","莒光鄉":"211","東引鄉":"212"}
+};
+
+let members = []; // {name, addr, zip, checked}
+
+function setStatus(html) { document.getElementById('status').innerHTML = html; }
+
+/* ---- 郵遞區號比對 ---- */
+function cleanAddr(raw) {
+  let a = (raw || '').replace(/\s+/g, '').replace(/臺/g, '台');
+  a = a.replace(/(區區|鄉鄉|鎮鎮|市市)/g, m => m[0] === '區' ? '區' : m.slice(0,1)); // 大園區區 → 大園區
+  a = a.replace(/^\d{3,6}/, ''); // 已含郵遞區號者去除
+  return a;
+}
+/* 回傳 { zip3, addr }：addr 為正規化地址（缺縣市時自動補上，供列印與 3+3 查詢用） */
+function zip3Info(raw) {
+  const a = cleanAddr(raw);
+  if (!a) return { zip3: '', addr: a };
+  for (const city in ZIP3) {
+    const idx = a.indexOf(city);
+    if (idx >= 0 && idx <= 2) {
+      const rest = a.slice(idx + city.length);
+      for (const d in ZIP3[city]) if (rest.startsWith(d)) return { zip3: ZIP3[city][d], addr: a.slice(idx) };
+      const uniq = [...new Set(Object.values(ZIP3[city]))];
+      return { zip3: uniq.length === 1 ? uniq[0] : '', addr: a.slice(idx) };
+    }
+  }
+  // 地址沒寫縣市：全台唯一的行政區名才敢用，並補上縣市
+  const hits = [];
+  for (const city in ZIP3) for (const d in ZIP3[city]) if (a.startsWith(d)) hits.push({ zip3: ZIP3[city][d], addr: city + a });
+  return hits.length === 1 ? hits[0] : { zip3: '', addr: a };
+}
+
+/* ---- 3+3 碼線上查詢（zip5.5432.tw，中華郵政資料；失敗時保留 3 碼）----
+   服務有流量限制（429），必須逐筆慢慢查；查過的地址存 localStorage，之後開啟秒查。 */
+const ZIP6_CACHE_KEY = 'jciZip6Cache';
+let zip6Running = false;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function fetchZip6All() {
+  if (zip6Running) return;
+  zip6Running = true;
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(ZIP6_CACHE_KEY) || '{}'); } catch (e) {}
+  // 只查還不是 6 碼、也沒被手動改過的
+  const targets = members.filter(m => !m.zipManual && !/^\d{6}$/.test(m.zip));
+  const queue = targets.slice();
+  const total = queue.length;
+  let ok = 0, cooldowns = 0, aborted = false, failStreak = 0;
+  const DELAY = 800; // 正常請求間隔，避免觸發服務流量管制
+  const coolOff = async () => { // 流量管制（或疑似）：整隊暫停 60 秒
+    if (++cooldowns > 10) { aborted = true; return false; }
+    for (let s = 60; s > 0; s -= 5) {
+      setZipStatus(`查詢服務流量管制中，${s} 秒後自動繼續…（已完成 ${ok}／${total}）`);
+      await sleep(5000);
+    }
+    return true;
+  };
+  while (queue.length) {
+    const m = queue.shift();
+    let z6 = cache[m.addr] || '';
+    const fromCache = !!z6;
+    if (!z6) {
+      try {
+        const r = await fetch('https://zip5.5432.tw/zip5json.py?adrs=' + encodeURIComponent(m.addr),
+          { signal: AbortSignal.timeout(12000) });
+        if (r.status === 429) { // 明確的流量管制回應
+          queue.unshift(m);
+          if (await coolOff()) continue; else break;
+        }
+        const d = await r.json();
+        failStreak = 0;
+        z6 = String(d.zipcode6 || '').trim();
+        if (/^\d{6}$/.test(z6)) cache[m.addr] = z6; else z6 = ''; // 查無此路段，不重試
+      } catch (e) {
+        // 注意：被流量管制時，瀏覽器端常拿到 CORS 錯誤（與網路錯誤無法區分）。
+        // 連續失敗 5 筆即視同流量管制，暫停後續跑；零星失敗則重試 2 次。
+        if (++failStreak >= 5) {
+          failStreak = 0;
+          queue.unshift(m);
+          if (await coolOff()) continue; else break;
+        }
+        m.__retry = (m.__retry || 0) + 1;
+        if (m.__retry <= 2) { queue.push(m); await sleep(2000); continue; }
+      }
+    }
+    if (z6 && !m.zipManual) {
+      m.zip = z6;
+      const inp = document.getElementById('zip-' + m.idx);
+      if (inp) { inp.value = z6; inp.closest('tr').className = ''; }
+      ok++;
+    }
+    setZipStatus(`郵遞區號 3+3 查詢中… 剩 ${queue.length} 筆（成功 ${ok}／${total}）`);
+    if (!fromCache) await sleep(DELAY); // 快取命中不需等待
+  }
+  try { localStorage.setItem(ZIP6_CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+  zip6Running = false;
+  const zip6n = members.filter(m => /^\d{6}$/.test(m.zip)).length;
+  const only3 = members.filter(m => /^\d{3}$/.test(m.zip)).length;
+  const retryBtn = ` <button class="ghost" style="font-size:12px;padding:2px 10px" onclick="fetchZip6All()">重新查詢 3+3</button>`;
+  let msg = `<span class="ok">3+3 碼完成：${zip6n} 位。</span>`;
+  if (aborted) msg = `<span class="warn">查詢服務暫時忙碌，已完成 ${zip6n} 位 3+3 碼，其餘暫用 3 碼（郵局仍可投遞）。稍後可再試：</span>` + retryBtn;
+  else if (only3) msg += ` <span class="warn">${only3} 位為 3 碼（查不到路段；郵局仍可投遞），可手動補為 6 碼。</span>` + retryBtn;
+  setZipStatus(msg);
+}
+function setZipStatus(html) { document.getElementById('zipStatus').innerHTML = html; }
+
+/* ---- 讀取試算表（gviz JSONP，免伺服器、免金鑰）---- */
+function loadRoster() {
+  setStatus('讀取中…');
+  document.getElementById('btnLoad').disabled = true;
+  const s = document.createElement('script');
+  s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:handleRoster&_=${Date.now()}`;
+  s.onerror = () => {
+    setStatus('<span class="err">讀取失敗：請確認網路連線，以及試算表為「知道連結者可檢視」。</span>');
+    document.getElementById('btnLoad').disabled = false;
+  };
+  document.body.appendChild(s);
+}
+function handleRoster(resp) {
+  document.getElementById('btnLoad').disabled = false;
+  if (!resp || resp.status !== 'ok') { setStatus('<span class="err">試算表回傳錯誤。</span>'); return; }
+  const t = resp.table;
+  const grid = t.rows.map(r => (r.c || []).map(c => (c && c.v != null) ? String(c.v) : ''));
+  // 表頭可能在 cols.label 或第一列
+  let header = t.cols.map(c => (c.label || '').trim());
+  let dataStart = 0;
+  if (header.filter(Boolean).length < 2) { header = grid[0].map(s => s.trim()); dataStart = 1; }
+  const iName = header.findIndex(h => h.includes('姓名'));
+  const iAddr = header.findIndex(h => h.includes('住址') || h.includes('地址'));
+  const iDuty = header.findIndex(h => h.includes('現任職務'));
+  const iHonor = header.findIndex(h => h.includes('榮譽頭銜'));
+  if (iName < 0 || iAddr < 0) { setStatus('<span class="err">找不到「姓名」或「住址」欄位，請檢查名冊表頭。</span>'); return; }
+
+  members = [];
+  let noAddr = [];
+  for (let r = dataStart; r < grid.length; r++) {
+    const name = (grid[r][iName] || '').trim();
+    if (!name || name === '姓名') continue;
+    const addr = (grid[r][iAddr] || '').replace(/\n/g, '').trim()
+      .replace(/([市縣][一-鿿]{1,3}?)(區區|鄉鄉|鎮鎮)/, (mm, p1, p2) => p1 + p2[0]); // 「大園區區」打字重複 → 「大園區」
+    if (!addr || addr === '-' || addr === '—') { noAddr.push(name); continue; }
+    const duty = iDuty >= 0 ? (grid[r][iDuty] || '').replace(/\s+/g, ' ').trim() : '';
+    const honor = iHonor >= 0 ? (grid[r][iHonor] || '').replace(/\s+/g, ' ').trim() : '';
+    // 「(歿)」「(已離會)」註記、或現任職務(D欄)標示「前會員」：預設不勾選
+    let flag = (name.match(/歿|離會|退會/) || [])[0] || '';
+    if (!flag && /前會員/.test(duty)) flag = '前會員';
+    const cleanName = name.replace(/[（(][^）)]*[）)]/g, '').replace(/\s+/g, '').trim();
+    const info = zip3Info(addr);
+    members.push({ name: cleanName, flag, duty, honor, addr: info.addr || addr, zip: info.zip3,
+                   zipManual: false, idx: members.length, checked: !flag });
+  }
+  renderMembers();
+  const noZip = members.filter(m => !m.zip).length;
+  const flagged = members.filter(m => m.flag).length;
+  let msg = `<span class="ok">已載入 ${members.length} 位有地址的會員。</span>`;
+  if (flagged) msg += ` <span class="warn">其中 ${flagged} 位標記「歿／離會／前會員」，已預設不勾選。</span>`;
+  if (noZip) msg += ` <span class="warn">${noZip} 位郵遞區號無法自動判斷（表格中紅框），請手動填寫。</span>`;
+  if (noAddr.length) msg += `<br><span class="warn">以下 ${noAddr.length} 位名冊上沒有地址，不會列入標籤：${noAddr.join('、')}</span>`;
+  setStatus(msg);
+  document.getElementById('cardMembers').style.display = '';
+  document.getElementById('cardOpts').style.display = '';
+  fetchZip6All(); // 背景升級為 3+3 碼
+}
+
+/* ---- 名單表格 ---- */
+function renderMembers() {
+  const tb = document.getElementById('memberRows');
+  tb.innerHTML = '';
+  members.forEach((m, i) => {
+    const tr = document.createElement('tr');
+    if (!m.zip) tr.className = 'nozip';
+    tr.innerHTML =
+      `<td><input type="checkbox" ${m.checked ? 'checked' : ''} onchange="members[${i}].checked=this.checked;updateCount()"></td>` +
+      `<td>${m.name}${m.flag ? ` <span style="color:#c00000;font-size:12px">(${m.flag})</span>` : ''}</td>` +
+      `<td>${/前會員/.test(m.duty) ? `<span style="color:#c00000">${m.duty}</span>` : m.duty}${m.honor ? ` <span style="color:#888;font-size:12px">${m.honor}</span>` : ''}</td>` +
+      `<td><input class="zip" id="zip-${i}" maxlength="6" value="${m.zip}" onchange="members[${i}].zip=this.value.trim();members[${i}].zipManual=true;this.closest('tr').className=this.value.trim()?'':'nozip'"></td>` +
+      `<td><input class="addr" value="${m.addr.replace(/"/g, '&quot;')}" onchange="members[${i}].addr=this.value.trim()"></td>`;
+    tb.appendChild(tr);
+  });
+  updateCount();
+}
+function setAll(v) { members.forEach(m => m.checked = v && !m.flag); renderMembers(); }
+function updateCount() {
+  const n = members.filter(m => m.checked).length;
+  document.getElementById('countInfo').textContent =
+    `已勾選 ${n} / ${members.length} 位，約需 ${Math.ceil(n / perSheet())} 張標籤紙`;
+  const off = document.getElementById('optOffset');
+  if (off) off.max = perSheet() - 1;
+}
+
+/* ---- 產生標籤 ---- */
+function generate() {
+  const sel = members.filter(m => m.checked);
+  if (!sel.length) { alert('沒有勾選任何會員'); return; }
+  const miss = sel.filter(m => !m.zip);
+  if (miss.length && !confirm(`還有 ${miss.length} 位沒填郵遞區號（${miss.slice(0,5).map(m=>m.name).join('、')}${miss.length>5?'…':''}），仍要繼續產生嗎？`)) return;
+
+  document.body.classList.toggle('gridprint', document.getElementById('optGrid').checked);
+  const honor = document.getElementById('optHonor').value;
+  const showTitle = document.getElementById('optTitle').checked;
+  const spec = currentSpec();
+  const per = spec.cols * spec.rows;
+  // 套用標籤紙尺寸（非整除 A4 的自訂規格自動置中）
+  const rt = document.documentElement.style;
+  rt.setProperty('--labelW', spec.w + 'mm');
+  rt.setProperty('--labelH', spec.h + 'mm');
+  rt.setProperty('--gridCols', `repeat(${spec.cols}, ${spec.w}mm)`);
+  rt.setProperty('--padH', Math.max(0, (210 - spec.cols * spec.w) / 2) + 'mm');
+  rt.setProperty('--padV', Math.max(0, (297 - spec.rows * spec.h) / 2) + 'mm');
+  const offset = Math.min(per - 1, Math.max(0, parseInt(document.getElementById('optOffset').value) || 0));
+
+  const cells = Array(offset).fill(null).concat(sel);
+  const pv = document.getElementById('preview');
+  pv.innerHTML = '';
+  for (let p = 0; p < cells.length; p += per) {
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    cells.slice(p, p + per).forEach(m => {
+      const d = document.createElement('div');
+      d.className = 'label';
+      if (m) {
+        // 職務／頭銜放姓名前方小字：榮譽頭銜優先（例「2026會長 -41屆」），無頭銜者用現任職務
+        const title = showTitle ? (m.honor || m.duty) : '';
+        d.innerHTML =
+          `<div class="zip">${m.zip || ''}</div>` +
+          `<div class="addr">${m.addr}</div>` +
+          `<div class="name">${title ? `<span class="title">${title}</span>` : ''}${m.name}　${honor}</div>`;
+      }
+      sheet.appendChild(d);
+    });
+    pv.appendChild(sheet);
+  }
+  // 防爆版：格子裝不下時先移除職務列（郵遞區號、地址、姓名為郵政必要資訊，不刪），仍裝不下則警告
+  const overflowed = [];
+  document.querySelectorAll('.label').forEach(el => {
+    if (!el.innerHTML.trim()) return;
+    if (el.scrollHeight > el.clientHeight + 1) {
+      const t = el.querySelector('.title');
+      if (t) t.remove();
+    }
+    if (el.scrollHeight > el.clientHeight + 1) {
+      const nm = el.querySelector('.name');
+      overflowed.push(nm ? nm.innerText.split('　')[0] : '?');
+      el.style.outline = '2px solid #c00000';
+    }
+  });
+  document.getElementById('btnPrint').disabled = false;
+  let info = `已產生 ${sel.length} 張標籤（${spec.name}）、共 ${Math.ceil(cells.length / per)} 頁。下方可捲動預覽，確認後按「列印／另存 PDF」。`;
+  if (overflowed.length) info += `⚠ ${overflowed.length} 張內容超出格子（紅框標示：${overflowed.slice(0, 5).join('、')}${overflowed.length > 5 ? '…' : ''}），請縮短該筆地址後重新產生。`;
+  else if (spec.h < 30 && showTitle) info += '（格高較矮，職務列若裝不下會自動省略）';
+  document.getElementById('genInfo').textContent = info;
+  pv.firstChild.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
