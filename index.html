@@ -862,7 +862,7 @@ function lineReturn(){
   if(!code){ toast('已取消 LINE 登入'); return; }
   // iPhone 從 LINE 跳回來常換分頁／瀏覽器，存的 state 可能不在：不在就照樣交給後端驗（後端向 LINE 換 token 才算數）；在但不符才擋
   let saved=null, next=''; try{ saved=localStorage.getItem('line_state'); next=localStorage.getItem('line_next')||''; localStorage.removeItem('line_state'); localStorage.removeItem('line_next'); }catch(e){}
-  if(saved && st!==saved){ toast('LINE 登入逾時，請再試一次'); return; }
+  // 舊的 state 可能是上一次沒走完的登入留下的（LINE 常把回來的頁面開在另一個瀏覽器／分頁），不符也照樣交給後端驗：後端向 LINE 換得到身分才算數（MAX 2026-10-01 00:31「第一次登入都會顯示失敗」）
   if(!next) next='card';
   // 跳回來就直接進會員卡／通訊錄頁顯示「登入中」，不停在首頁乾等（MAX 2026-09-30 23:53「LINE登入整個畫面回應超慢」）
   lineBusy=next; showPage(next);
