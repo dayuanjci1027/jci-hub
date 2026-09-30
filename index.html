@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#e3f2fd" media="(prefers-color-scheme: light)">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="roster-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
@@ -425,7 +426,7 @@ function closeLogin(){ document.getElementById('loginModal').classList.remove('o
 async function doLogin(){
   const pw=document.getElementById('pwInput').value.trim();
   let ok=false; try{ ok=await fbSignIn(pw); }catch(e){}
-  if(ok){ role='se'; sessionStorage.setItem('jci-role','se'); closeLogin(); applyRole(); toast('✓ 已登入秘書處'); }
+  if(ok){ role='se'; sessionStorage.setItem('jci-role','se'); closeLogin(); applyRole(); toast('✓ 已登入秘書處'); syncSheet(); }
   else document.getElementById('pwErr').textContent='通行碼錯誤，請再試一次（通行碼在 02 總表「名冊工具」選單）';
 }
 
@@ -817,13 +818,13 @@ function hubAssemble(){
   aRender(); renderCands(); renderTrainees();
   const el=document.getElementById('dataTag'); if(el) el.textContent='資料：即時同步';
 }
+// 2026-09-30：05 出席率表改限制存取 → 改由後端（登入驗證後）讀；未登入就維持內建快照
 function syncSheet(){
-  [['今年度','hubThis'],['前年度','hubPrev'],['參數設定','hubParam']].forEach(([sh,cb])=>{
-    const s=document.createElement('script');
-    s.src=`https://docs.google.com/spreadsheets/d/${ATT_SHEET}/gviz/tq?sheet=${encodeURIComponent(sh)}&headers=0&tqx=out:json;responseHandler:${cb}&_=${Date.now()}`;
-    s.onerror=()=>{ const el=document.getElementById('dataTag'); if(el) el.textContent='資料：內建快照'; };
-    document.body.appendChild(s);
-  });
+  if(!window.fetchAttBatch) return;
+  const has=(()=>{ try{ return !!(localStorage.getItem('jci-fb-auth')||localStorage.getItem('jci_sess')||(localStorage.getItem('jci_acc')&&localStorage.getItem('jci_pwd'))); }catch(e){ return false; } })();
+  if(!has) return;
+  fetchAttBatch(['今年度','前年度','參數設定'],{'今年度':'hubThis','前年度':'hubPrev','參數設定':'hubParam'},
+    ()=>{ const el=document.getElementById('dataTag'); if(el) el.textContent='資料：內建快照'; });
 }
 
 // ── 會員：我的會員卡／通訊錄（2026-09-30 App 化；後端＝02 總表綁定腳本，帳密與會員通訊錄共用 localStorage jci_acc／jci_pwd）──
@@ -851,7 +852,7 @@ function lineReturn(){
   memApi('lineLogin',{code,redirectUri:LINE_BACK}).then(res=>{
     if(res.status!=='success'){ alert(res.message||'LINE 登入失敗'); return; }
     localStorage.setItem('jci_sess',res.session); memList=null; memCard=null;
-    toast('✓ 已用 LINE 登入');
+    toast('✓ 已用 LINE 登入'); syncSheet();
     memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||null; labelsData=r.labels||{}; paintHero(); } });
     if(next) openMember(next);
   }).catch(()=>alert('連線失敗，請稍後再試'));
@@ -872,6 +873,7 @@ function memLogin(){
     localStorage.setItem('jci_acc',acc); localStorage.setItem('jci_pwd',pwd);
     memApi('recordLoginLog',{name:(res.me&&res.me.name)||'',account:acc}).catch(()=>{});
     memList=res.members||[]; memMe=res.me||null; labelsData=res.labels||{}; memCard=null; document.getElementById('memModal').classList.remove('on'); paintHero();
+    syncSheet();
     if(memPending){ const p=memPending; memPending=null; openMember(p); }
   }).catch(()=>{ document.getElementById('memErr').textContent='連線失敗，請稍後再試'; });
 }

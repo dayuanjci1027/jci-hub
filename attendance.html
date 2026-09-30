@@ -393,11 +393,9 @@ function syncLive(){
   fetchSheet(SHEET_ID,'今年度','cbThis'); fetchSheet(SHEET_ID,'前年度','cbPrev'); fetchSheet(SHEET_ID,'參數設定','cbParam');
   fetchSheet(SHEET_ID,'歷屆理監事職務紀錄','cbHist'); fetchRosterAuthed('cbRoster', m=>toast('會員名冊：'+m));
 }
+// 2026-09-30：05 出席率表改限制存取 → 改由後端（登入驗證後）讀
 function fetchSheet(id, name, cb){
-  const s=document.createElement('script');
-  s.src=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?sheet=${encodeURIComponent(name)}&headers=0&tqx=out:json;responseHandler:${cb}&_=${Date.now()}`;
-  s.onerror=()=>toast('此環境擋外部連線，維持使用內建快照（本機開啟或部署後可同步）');
-  document.body.appendChild(s);
+  fetchAttAuthed(name, cb, m=>toast('出席率表：'+m+'（維持內建快照）'));
 }
 function grid(resp){
   return resp.table.rows.map(r=>(r.c||[]).map(c=>c&&c.v!=null?String(c.v):''));

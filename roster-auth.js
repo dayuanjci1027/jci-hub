@@ -29,31 +29,47 @@
     }
     return { acc: acc, pwd: pwd };
   }
-  function post(payload) {
+  function post(payload, action, extra, _n) {
+    for (var k in extra) payload[k] = extra[k];
     return fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getRosterSheet', payload: payload }) }).then(function (r) { return r.json(); });
+      body: JSON.stringify({ action: action, payload: payload }) }).then(function (r) { return r.json(); })
+      .catch(function (e) { if ((_n || 0) < 2) return post(payload, action, {}, (_n || 0) + 1); throw e; });   // Google 偶發回空白頁，自動重試兩次
   }
+  /* 05 出席率表分頁（限制存取後改由後端讀）：fetchAttAuthed('今年度', 'cbThis', onFail) */
+  window.fetchAttAuthed = function (sheet, cbName, onFail) { return authed('getAttSheet', { sheet: sheet }, cbName, onFail); };
+  /* 05 出席率表一次讀多個分頁：fetchAttBatch(['今年度','前年度'], {今年度:'cbThis', 前年度:'cbPrev'}, onFail)
+     逐一呼叫 window[cb]({table})，外型與原本 gviz 相同 */
+  window.fetchAttBatch = function (sheets, cbMap, onFail) {
+    window.__attBatchCb = function (res) {
+      Object.keys(cbMap).forEach(function (n) { var t = res.tables && res.tables[n]; if (t && window[cbMap[n]]) window[cbMap[n]]({ table: t }); });
+    };
+    return authed('getAttSheets', { sheets: sheets }, '__attBatchCb', onFail);
+  };
   /* 取名冊後呼叫 window[cbName](resp)；resp 外型與原本 gviz 相同。onFail(訊息) 可選。 */
-  window.fetchRosterAuthed = function (cbName, onFail, _retry) {
+  window.fetchRosterAuthed = function (cbName, onFail) { return authed('getRosterSheet', {}, cbName, onFail); };
+  function authed(action, extra, cbName, onFail) {
+    return run(cbName, onFail, false, action, extra);
+  }
+  function run(cbName, onFail, _retry, action, extra) {
     secToken().then(function (tok) {
       if (tok && !_retry) {
-        return post({ fbIdToken: tok }).then(function (res) {
+        return post({ fbIdToken: tok }, action, extra).then(function (res) {
           if (res.status === 'ok') { window[cbName](res); return; }
-          window.fetchRosterAuthed(cbName, onFail, 'member');   // 秘書處憑證失效就改用會員登入
+          run(cbName, onFail, 'member', action, extra);   // 秘書處憑證失效就改用會員登入
         });
       }
       var c = creds(_retry === true);
       if (!c) { if (onFail) onFail('未登入，無法讀取名冊'); return; }
-      return post(c).then(function (res) {
+      return post(c, action, extra).then(function (res) {
         if (res.status === 'ok') {
           if (c.acc) { localStorage.setItem('jci_acc', c.acc); localStorage.setItem('jci_pwd', c.pwd); }
           window[cbName](res);
         } else if (res.status === 'auth_failed' && _retry !== true) {
           if (c.session) localStorage.removeItem('jci_sess');
           alert('登入已失效或帳號密碼錯誤，請重新輸入');
-          window.fetchRosterAuthed(cbName, onFail, true);
+          run(cbName, onFail, true, action, extra);
         } else if (onFail) onFail(res.message || '讀取失敗');
       });
     }).catch(function () { if (onFail) onFail('連線失敗，請稍後再試'); });
-  };
+  }
 })();
