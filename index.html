@@ -433,6 +433,7 @@ function applyRole(){
   else { b.className='rolebadge'; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-3.4 3.6-5 7-5s6 1.6 7 5"/></svg>會員'; }
   document.querySelectorAll('.se-btn').forEach(e=>e.style.display=role==='se'?'':'none');
   renderLauncher();
+  if(role==='se') setTimeout(swPrefetch,1200);
 }
 function roleTap(){ if(role==='se'){ if(confirm('登出秘書處，切回會員檢視？')){ role='view'; sessionStorage.removeItem('jci-role'); fbAuthSave(null); try{ const a=fbSdk(); if(a) a.signOut(); }catch(e){} applyRole(); goHome(); } } else showLogin(); }
 function showLogin(){ document.getElementById('pwErr').textContent=''; document.getElementById('pwInput').value=''; document.getElementById('loginModal').classList.add('on'); setTimeout(()=>document.getElementById('pwInput').focus(),80); }
@@ -999,14 +1000,18 @@ function filterAndSort(){
 }
 // ── 秘書長工作台（秘書處限定；資料即時讀「01-秘書長SOP」「重要資訊管理」兩張表）──
 let swData=null, swTab='sop', swPerson='全部', swCat='全部';
+// 秘書處登入後背景先把秘書長手冊讀好，點開就直接顯示（MAX 2026-09-30 22:33「讀取試算表也需時太久」）
+let swPrefetching=null;
+function swPrefetch(){ if(swData||swPrefetching) return; swPrefetching=(async()=>{ try{ const tok=await fbToken(); if(!tok) return; const r=await memApi('getSecWork',{fbIdToken:tok,withSecrets:true}); if(r&&(r.status==='ok'||r.status==='success')&&!swData){ swData=r; if(cur==='secwork') swRender(); } }catch(e){} finally{ swPrefetching=null; } })(); }
 function openSecWork(){ showPage('secwork'); swLoad(); }
 async function swLoad(force){
   if(swData&&!force){ swRender(); return; }
+  if(swPrefetching&&!force){ document.getElementById('swBody').innerHTML='<div class="empty">讀取中…</div>'; await swPrefetching; if(swData){ swRender(); return; } }
   document.getElementById('swBody').innerHTML='<div class="empty">讀取中…</div>';
   try{
     const tok=await fbToken(); if(!tok){ showLogin(); return; }
     let res=null;
-    for(let k=0;k<3&&!res;k++){ try{ res=await memApi('getSecWork',{fbIdToken:tok,withSecrets:true}); }catch(e){} }
+    for(let k=0;k<3&&!res;k++){ try{ res=await memApi('getSecWork',{fbIdToken:tok,withSecrets:true,nocache:!!force}); }catch(e){} }
     if(!res){ document.getElementById('swBody').innerHTML='<div class="empty">連線失敗，請稍後再試</div>'; return; }
     if(res.status!=='success'&&res.status!=='ok'){ document.getElementById('swBody').innerHTML='<div class="empty">'+escH(res.message||'讀取失敗')+'</div>'; return; }
     swData=res; swRender();
