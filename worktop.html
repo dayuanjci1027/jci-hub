@@ -177,6 +177,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .addform.on{display:flex}
 .mini{font-size:11px;color:var(--muted)}
 </style>
+<script src="roster-auth.js"></script>
 </head>
 <body>
 
@@ -735,10 +736,7 @@ function syncRoster(){
       else toast('名冊讀取成功但沒有資料列');
     }catch(e){ toast('名冊格式解析失敗'); }
   };
-  const s=document.createElement('script');
-  s.src=`https://docs.google.com/spreadsheets/d/1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y/gviz/tq?tqx=out:json;responseHandler:handleRoster&_=${Date.now()}`;
-  s.onerror=()=>toast('此預覽環境擋外部連線；部署正式版或本機開啟即可同步真實名冊');
-  document.body.appendChild(s);
+  fetchRosterAuthed('handleRoster', m=>toast('會員名冊：'+m));
 }
 
 /* ══════════ 渲染：活動 ══════════ */

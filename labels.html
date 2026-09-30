@@ -75,6 +75,7 @@
     .sheet:last-child { page-break-after: auto; }
   }
 </style>
+<script src="roster-auth.js"></script>
 </head>
 <body>
 <div id="app">
@@ -343,13 +344,10 @@ function setZipStatus(html) { document.getElementById('zipStatus').innerHTML = h
 function loadRoster() {
   setStatus('讀取中…');
   document.getElementById('btnLoad').disabled = true;
-  const s = document.createElement('script');
-  s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:handleRoster&_=${Date.now()}`;
-  s.onerror = () => {
-    setStatus('<span class="err">讀取失敗：請確認網路連線，以及試算表為「知道連結者可檢視」。</span>');
+  fetchRosterAuthed('handleRoster', m => {
+    setStatus('<span class="err">讀取失敗：' + m + '</span>');
     document.getElementById('btnLoad').disabled = false;
-  };
-  document.body.appendChild(s);
+  });
 }
 function handleRoster(resp) {
   document.getElementById('btnLoad').disabled = false;
