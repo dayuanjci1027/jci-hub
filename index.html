@@ -275,7 +275,8 @@ button{cursor:pointer}
 <div class="modal" id="memModal">
   <div class="mcard">
     <h3>會員登入</h3>
-    <p>帳號＝身分證字號，密碼＝生日 8 碼（例 19900101）。登入一次就記住，跟會員通訊錄共用。</p>
+    <button class="btn wide" style="background:#06C755;color:#fff;border:none;font-weight:800" onclick="lineStart()">用 LINE 登入</button>
+    <p style="margin-top:12px">或用帳號登入：帳號＝身分證字號，密碼＝生日 8 碼（例 19900101）。</p>
     <input id="memAcc" placeholder="身分證字號" autocapitalize="characters" autocomplete="username">
     <input id="memPwd" type="password" inputmode="numeric" placeholder="生日 8 碼" autocomplete="current-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')memLogin()">
     <div class="err" id="memErr"></div>
@@ -734,13 +735,38 @@ function syncSheet(){
 
 // ── 會員：我的會員卡／通訊錄（2026-09-30 App 化；後端＝02 總表綁定腳本，帳密與會員通訊錄共用 localStorage jci_acc／jci_pwd）──
 const MEM_API='https://script.google.com/macros/s/AKfycbxZFmBC8rpRV9GMg3d5rROMW7Cmf3pQZrQ74INM5WKYnnYYCwGCdLWXluFfZlwS3grz/exec';
-let memPending=null, memList=null, memCard=null, bkFilt='全部';
-function memCreds(){ return {acc:localStorage.getItem('jci_acc')||'', pwd:localStorage.getItem('jci_pwd')||''}; }
+let memPending=null, memList=null, memMe=null, memCard=null, bkFilt='全部';
+function memCreds(){ const s=localStorage.getItem('jci_sess'); if(s) return {session:s}; return {acc:localStorage.getItem('jci_acc')||'', pwd:localStorage.getItem('jci_pwd')||''}; }
+function memHas(){ const c=memCreds(); return !!(c.session||(c.acc&&c.pwd)); }
+// LINE 標準登入（網頁／App 共用）：跳 LINE 授權 → 帶 code 回來 → 後端驗證後發 30 天登入憑證
+const LINE_CH='2008793289', LINE_BACK='https://dayuanjci1027.github.io/jci-hub/';
+function lineStart(){
+  const st=Math.random().toString(36).slice(2)+Date.now().toString(36);
+  sessionStorage.setItem('line_state',st); if(memPending) sessionStorage.setItem('line_next',memPending);
+  location.href='https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id='+LINE_CH+'&redirect_uri='+encodeURIComponent(LINE_BACK)+'&state='+st+'&scope=profile%20openid';
+}
+function lineReturn(){
+  const q=new URLSearchParams(location.search), code=q.get('code'), st=q.get('state');
+  if(!code&&!q.get('error')) return;
+  history.replaceState(null,'',location.pathname);
+  if(!code){ toast('已取消 LINE 登入'); return; }
+  if(!st||st!==sessionStorage.getItem('line_state')){ toast('LINE 登入逾時，請再試一次'); return; }
+  sessionStorage.removeItem('line_state');
+  const next=sessionStorage.getItem('line_next'); sessionStorage.removeItem('line_next');
+  toast('LINE 登入中…');
+  memApi('lineLogin',{code,redirectUri:LINE_BACK}).then(res=>{
+    if(res.status!=='success'){ alert(res.message||'LINE 登入失敗'); return; }
+    localStorage.setItem('jci_sess',res.session); memList=null; memCard=null;
+    toast('✓ 已用 LINE 登入');
+    memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||null; paintHero(); } });
+    if(next) openMember(next);
+  }).catch(()=>alert('連線失敗，請稍後再試'));
+}
 function memApi(action,payload){ return fetch(MEM_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})}).then(r=>r.json()); }
 function escH(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function openMember(id){
   const c=memCreds();
-  if(!c.acc||!c.pwd){ memPending=id; document.getElementById('memErr').textContent=''; document.getElementById('memModal').classList.add('on'); return; }
+  if(!memHas()){ memPending=id; document.getElementById('memErr').textContent=''; document.getElementById('memModal').classList.add('on'); return; }
   showPage(id); if(id==='card') loadCard(); else loadBook();
 }
 function memLogin(){
@@ -751,19 +777,18 @@ function memLogin(){
     if(res.status!=='success'){ document.getElementById('memErr').textContent=res.message||'帳號或密碼錯誤'; return; }
     localStorage.setItem('jci_acc',acc); localStorage.setItem('jci_pwd',pwd);
     memApi('recordLoginLog',{name:(res.me&&res.me.name)||'',account:acc}).catch(()=>{});
-    memList=res.members||[]; memCard=null; document.getElementById('memModal').classList.remove('on'); paintHero();
+    memList=res.members||[]; memMe=res.me||null; memCard=null; document.getElementById('memModal').classList.remove('on'); paintHero();
     if(memPending){ const p=memPending; memPending=null; openMember(p); }
   }).catch(()=>{ document.getElementById('memErr').textContent='連線失敗，請稍後再試'; });
 }
 function memLogout(){
   if(!confirm('登出會員？（會員通訊錄也會一起登出）')) return;
-  localStorage.removeItem('jci_acc'); localStorage.removeItem('jci_pwd'); memList=null; memCard=null; paintHero(); goHome();
+  localStorage.removeItem('jci_acc'); localStorage.removeItem('jci_pwd'); localStorage.removeItem('jci_sess'); memList=null; memMe=null; memCard=null; paintHero(); goHome();
 }
-function memExpired(){ localStorage.removeItem('jci_pwd'); memList=null; memCard=null; toast('登入已失效，請重新登入'); }
+function memExpired(){ localStorage.removeItem('jci_pwd'); localStorage.removeItem('jci_sess'); memList=null; memCard=null; toast('登入已失效，請重新登入'); }
 function paintHero(){
   const h=document.querySelector('.hero h2'); if(!h) return;
-  const acc=memCreds().acc, me=memList&&memList.find(m=>m.acc===acc);
-  h.textContent = me ? (me.name+' 你好 👋') : '歡迎回來 👋';
+  h.textContent = (memMe&&memMe.name) ? (memMe.name+' 你好 👋') : '歡迎回來 👋';
 }
 function loadCard(){
   document.getElementById('cYr').textContent=new Date().getFullYear();
@@ -784,7 +809,7 @@ function loadBook(){
   document.getElementById('bkList').innerHTML='<div class="empty">載入中…</div>';
   memApi('getMembers',memCreds()).then(res=>{
     if(res.status!=='success'){ memExpired(); document.getElementById('bkList').innerHTML='<div class="empty">請重新登入</div>'; return; }
-    memList=res.members||[]; paintHero(); bkChips(); renderBook();
+    memList=res.members||[]; memMe=res.me||null; paintHero(); bkChips(); renderBook();
   }).catch(()=>{ document.getElementById('bkList').innerHTML='<div class="empty">連線失敗，請稍後再試</div>'; });
 }
 function bkMembers(){ return (memList||[]).filter(m=>(m.role||'').indexOf('前會員')<0); }
@@ -801,7 +826,8 @@ function renderBook(){
     return `<div class="bk-p">${av}<div><b>${escH(m.name)}</b><div class="s">${escH([m.badge||m.role,m.company].filter(Boolean).join(' · '))}</div></div>${tel?`<a class="call" href="tel:${escH(tel)}" aria-label="撥打">📞</a>`:''}</div>`;
   }).join('') : '<div class="empty">沒有符合的會友</div>';
 }
-if(memCreds().acc&&memCreds().pwd) memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; paintHero(); } }).catch(()=>{});
+lineReturn();
+if(memHas()) memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||null; paintHero(); } }).catch(()=>{});
 
 applyRole();
 aUse('election');
