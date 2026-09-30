@@ -1027,7 +1027,7 @@ function swSop(){
     const m=(t.match(/(\d{1,2})\s*月/)||[])[1]; const mm=m?+m:0;
     const tag= mm===now?'<span class="chip brand">本月</span>':mm===nxt?'<span class="chip warn">下個月</span>':'';
     const key=y+'|'+t; if(key!==lastKey){ html+=`<div class="sec" style="margin:14px 2px 6px">${escH(y)}・${escH(t)} ${tag}</div>`; lastKey=key; }
-    html+=`<div class="card" style="padding:12px 14px;margin-bottom:8px${mm===now?';border:1.5px solid var(--brand)':''}"><b>${escH(node||'（未命名）')}</b>${cont?`<div style="margin-top:4px;white-space:pre-wrap">${escH(cont)}</div>`:''}${rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(rem)}</div>`:''}</div>`;
+    html+=`<div class="card" style="padding:12px 14px;margin-bottom:8px${mm===now?';border:1.5px solid var(--brand)':''}">${node?`<b>${escH(node)}</b>`:''}${cont?`<div style="${node?'margin-top:4px;':''}white-space:pre-wrap">${escH(cont)}</div>`:''}${rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(rem)}</div>`:''}</div>`;
   }
   return html||'<div class="empty">沒有資料</div>';
 }
@@ -1043,8 +1043,8 @@ function swTasks(){
   }
   const people=['全部',...new Set(items.map(x=>x.p))], cats=['全部',...new Set(items.map(x=>x.k))];
   const chips=(arr,cur,fn)=>`<div class="chips">${arr.map(a=>`<button class="${a===cur?'on':''}" onclick="${fn}('${escH(a)}')">${escH(a)}</button>`).join('')}</div>`;
-  const list=items.filter(x=>(swPerson==='全部'||x.p===swPerson)&&(swCat==='全部'||x.k===swCat));
-  return chips(people,swPerson,'swSetPerson')+chips(cats,swCat,'swSetCat')+(list.map(x=>`<div class="card" style="padding:12px 14px;margin-bottom:8px"><div class="meta">${escH(x.no?'#'+x.no+'・':'')}${escH(x.k)}・${escH(x.p)}</div><b>${escH(x.sub.join(' › '))}</b>${x.rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(x.rem)}</div>`:''}</div>`).join('')||'<div class="empty">沒有符合的工作</div>');
+  const list=items.filter(x=>swCat==='全部'||x.k===swCat);
+  return chips(cats,swCat,'swSetCat')+(list.map(x=>`<div class="card" style="padding:12px 14px;margin-bottom:8px"><div class="meta">${escH(x.no?'#'+x.no+'・':'')}${escH(x.k)}</div><b>${escH(x.sub.join(' › '))}</b>${x.rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(x.rem)}</div>`:''}</div>`).join('')||'<div class="empty">沒有符合的工作</div>');
 }
 function swSetPerson(p){ swPerson=p; swRender(); }
 function swSetCat(c){ swCat=c; swRender(); }
