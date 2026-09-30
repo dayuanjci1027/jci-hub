@@ -3,41 +3,36 @@
 <head>
 <meta charset="utf-8">
 <title>大園青商 會務系統</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="大園青商">
+<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e3f2fd" media="(prefers-color-scheme: light)">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+/* 配色：iPinTour 黑／白兩套（MAX 2026-09-30「IPINTOUR有 黑色跟白色 的選項…跟著IPHONE手機設定的黑或白變更」）*/
 :root{
-  --brand:#0097D7; --brand-d:#0079B0; --royal:#1F4789; --teal:#57BCBC; --gold:#EFC40F; --ink:#130F2D;
+  --brand:#e94560; --brand-d:#c7304a; --royal:#0f3460; --teal:#2a9d8f; --gold:#EFC40F; --ink:#1f2937;
   --on-brand:#FFFFFF;
-  --bg:#EDF3F8; --surface:#FFFFFF; --surface2:#F2F7FB; --sunk:#E7F0F7;
-  --text:#130F2D; --muted:#5B6377; --faint:#8791A5; --line:#DBE5EF;
+  --bg:#e3f2fd; --bgpaint:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 30%,#e1f0fb 70%,#f5faff 100%);
+  --surface:#FFFFFF; --surface2:#f3f4f6; --sunk:#fde8ec;
+  --text:#1f2937; --muted:#4b5563; --faint:#6b7280; --line:rgba(0,0,0,.12);
   --ok:#0E8F63; --ok-bg:#E1F4EC; --warn:#A87C08; --warn-bg:#FBF1D3; --bad:#CB3A31; --bad-bg:#FBE7E5;
-  --shadow:0 1px 2px rgba(19,15,45,.05),0 6px 18px rgba(19,15,45,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.07);
 }
 @media (prefers-color-scheme:dark){:root{
-  --brand:#33B1E6; --brand-d:#5BC2EC; --royal:#7C9BDD; --teal:#6FC9C9; --gold:#F2CE34; --ink:#0B0820;
-  --on-brand:#0B0A22;
-  --bg:#130F2D; --surface:#1E1A42; --surface2:#262156; --sunk:#191540;
-  --text:#EEF1F8; --muted:#A29ECB; --faint:#726CA0; --line:#332C60;
+  --brand:#e94560; --brand-d:#ff6b81; --royal:#0f3460; --teal:#4fc3b5; --gold:#F2CE34; --ink:#0f0f0f;
+  --on-brand:#FFFFFF;
+  --bg:#0f0f0f; --bgpaint:#0f0f0f; --surface:#1a1a2e; --surface2:#1e1e3a; --sunk:#2a1a2a;
+  --text:#eeeeee; --muted:#9ca3af; --faint:#6b7280; --line:rgba(255,255,255,.1);
   --ok:#43C68E; --ok-bg:#123328; --warn:#E7B23F; --warn-bg:#332916; --bad:#E9645B; --bad-bg:#38201F;
   --shadow:0 1px 2px rgba(0,0,0,.45);
 }}
-:root[data-theme="light"]{
-  --brand:#0097D7; --brand-d:#0079B0; --royal:#1F4789; --teal:#57BCBC; --gold:#EFC40F; --ink:#130F2D;
-  --on-brand:#FFFFFF; --bg:#EDF3F8; --surface:#FFFFFF; --surface2:#F2F7FB; --sunk:#E7F0F7;
-  --text:#130F2D; --muted:#5B6377; --faint:#8791A5; --line:#DBE5EF;
-  --ok:#0E8F63; --ok-bg:#E1F4EC; --warn:#A87C08; --warn-bg:#FBF1D3; --bad:#CB3A31; --bad-bg:#FBE7E5;
-  --shadow:0 1px 2px rgba(19,15,45,.05),0 6px 18px rgba(19,15,45,.07);
-}
-:root[data-theme="dark"]{
-  --brand:#33B1E6; --brand-d:#5BC2EC; --royal:#7C9BDD; --teal:#6FC9C9; --gold:#F2CE34; --ink:#0B0820;
-  --on-brand:#0B0A22; --bg:#130F2D; --surface:#1E1A42; --surface2:#262156; --sunk:#191540;
-  --text:#EEF1F8; --muted:#A29ECB; --faint:#726CA0; --line:#332C60;
-  --ok:#43C68E; --ok-bg:#123328; --warn:#E7B23F; --warn-bg:#332916; --bad:#E9645B; --bad-bg:#38201F;
-  --shadow:0 1px 2px rgba(0,0,0,.45);
-}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{background:var(--bgpaint);background-attachment:fixed;color:var(--text);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
 #app{max-width:540px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:30px}
 button,select,input{font-family:inherit}
 select,input{font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;outline:none;width:100%}
@@ -46,7 +41,7 @@ button{cursor:pointer}
 .num{font-variant-numeric:tabular-nums}
 
 .bar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:11px 14px;display:flex;align-items:center;gap:11px;min-height:56px}
-.bar .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);color:var(--on-brand);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none;letter-spacing:.02em}
+.bar .logo{height:38px;width:auto;border-radius:8px;flex:none;display:block}
 .bar h1{font-size:16px;margin:0;font-weight:800}
 .bar .sub{font-size:11px;color:var(--muted)}
 .bar .spacer{flex:1}
@@ -77,8 +72,8 @@ button{cursor:pointer}
 .launch .ext{position:absolute;top:13px;right:13px;color:var(--faint)}
 .launch .ext svg{width:15px;height:15px}
 .ic-brand{background:var(--sunk);color:var(--brand)}
-.ic-royal{background:rgba(31,71,137,.12);color:var(--royal)}
-.ic-teal{background:rgba(87,188,188,.16);color:#2C8C8C}
+.ic-royal{background:var(--sunk);color:var(--brand)}
+.ic-teal{background:var(--sunk);color:var(--teal)}
 .ic-gold{background:rgba(239,196,15,.18);color:#997C07}
 :root[data-theme="dark"] .ic-teal{color:var(--teal)}
 :root[data-theme="dark"] .ic-gold{color:var(--gold)}
@@ -164,6 +159,22 @@ button{cursor:pointer}
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;padding:11px 17px;border-radius:12px;font-size:13px;font-weight:700;z-index:90;opacity:0;transition:.25s;max-width:88%;text-align:center;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%)}
 :root[data-theme="dark"] .toast{background:#000}
+/* 我的會員卡／通訊錄（2026-09-30 App 化） */
+.mycard{border-radius:20px;padding:22px;color:#fff;background:linear-gradient(140deg,#0f3460,#1a1a2e 60%,#e94560);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.mycard .top{display:flex;justify-content:space-between;font-size:12px;opacity:.9}
+.mycard .row2{display:flex;gap:14px;align-items:center;margin-top:18px}
+.mycard .ph{width:72px;height:72px;border-radius:14px;background:rgba(255,255,255,.2) center/cover;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;flex:none}
+.mycard h2{font-size:22px;margin:0}.mycard p{font-size:13px;opacity:.9;margin:4px 0 0}
+.mycard .qrw{background:#fff;border-radius:14px;padding:12px;width:204px;margin:18px auto 0}
+.mycard .qrw canvas,.mycard .qrw img{width:180px!important;height:180px!important;display:block}
+.mycard .uid{text-align:center;font-size:12px;opacity:.85;margin-top:10px;letter-spacing:1px}
+.bk-p{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.bk-av{width:44px;height:44px;border-radius:50%;background:var(--sunk) center/cover;color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.bk-p b{font-size:15px}.bk-p .s{font-size:12px;color:var(--muted)}
+.bk-p .call{margin-left:auto;font-size:20px;padding:6px;text-decoration:none}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:8px 0 10px}
+.chips button{width:auto;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:5px 12px;font-size:12px;white-space:nowrap}
+.chips button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 </style>
 </head>
 <body>
@@ -172,7 +183,7 @@ button{cursor:pointer}
   <header class="bar">
     <button class="back" id="backBtn" onclick="goBack()" style="display:none">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span id="backLabel">會務系統</span></button>
-    <div class="logo" id="barLogo">JCI</div>
+    <img class="logo" id="barLogo" src="logo-bar.png" alt="JCI Dayuan">
     <div id="barTitle"><h1 id="barH1">大園青商 會務系統</h1><div class="sub"><span id="barSub">2026 年度</span> · <span id="dataTag">資料：內建快照</span></div></div>
     <div class="spacer"></div>
     <button class="rolebadge" id="roleBadge" onclick="roleTap()"></button>
@@ -188,6 +199,23 @@ button{cursor:pointer}
     <div class="grid" id="launcher"></div>
     <div class="note" id="homeNote"></div>
     <div style="text-align:center;font-size:11.5px;color:var(--faint);letter-spacing:.04em;margin-top:22px">2026 秘書長 － 吳瑞田 製作　｜　系統建置：<a href="https://zense.tw" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Zense</a></div>
+  </div></section>
+
+  <section class="page" id="p-card"><div class="wrap">
+    <div class="mycard">
+      <div class="top"><b>JCI 大園國際青年商會</b><span id="cYr"></span></div>
+      <div class="row2"><div class="ph" id="cPh"></div><div><h2 id="cName"></h2><p id="cTitle"></p></div></div>
+      <div class="qrw"><div id="cQr"></div></div>
+      <div class="uid" id="cUid"></div>
+    </div>
+    <div class="note" style="text-align:center">活動報到時把這個 QR 給秘書處掃，跟 LINE@ 叫出來的會員卡是同一張。</div>
+    <div style="text-align:center;margin-top:10px"><button class="btn small ghost" style="width:auto" onclick="memLogout()">登出會員</button></div>
+  </div></section>
+
+  <section class="page" id="p-book"><div class="wrap">
+    <input id="bkQ" type="search" placeholder="搜尋姓名、公司、職稱" oninput="renderBook()">
+    <div class="chips" id="bkChips"></div>
+    <div id="bkList"></div>
   </div></section>
 
   <section class="page" id="p-checkin"><div class="wrap">
@@ -244,6 +272,16 @@ button{cursor:pointer}
     <div class="btnrow"><button class="btn ghost" onclick="closeLogin()">取消</button><button class="btn primary grow" style="width:auto;flex:1" onclick="doLogin()">登入</button></div>
   </div>
 </div>
+<div class="modal" id="memModal">
+  <div class="mcard">
+    <h3>會員登入</h3>
+    <p>帳號＝身分證字號，密碼＝生日 8 碼（例 19900101）。登入一次就記住，跟會員通訊錄共用。</p>
+    <input id="memAcc" placeholder="身分證字號" autocapitalize="characters" autocomplete="username">
+    <input id="memPwd" type="password" inputmode="numeric" placeholder="生日 8 碼" autocomplete="current-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')memLogin()">
+    <div class="err" id="memErr"></div>
+    <div class="btnrow"><button class="btn ghost" onclick="document.getElementById('memModal').classList.remove('on')">取消</button><button class="btn primary grow" style="width:auto;flex:1" onclick="memLogin()">登入</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -274,6 +312,10 @@ const GONGWEN_URL = 'gongwen.html';
 const idMap={}; ROSTER.forEach(m=>idMap[m.id.toLowerCase()]=m);
 
 const TOOLS=[
+  {id:'card',label:'我的會員卡',desc:'QR 報到・出示身分',ic:'ic-brand',se:false,kind:'mem',
+   svg:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5.5 16c.6-1.6 1.7-2.4 3-2.4s2.4.8 3 2.4M14 10h4.5M14 13.5h3"/>'},
+  {id:'book',label:'通訊錄',desc:'找會友電話・公司',ic:'ic-teal',se:false,kind:'mem',
+   svg:'<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17c.8-2 2.2-3 4-3s3.2 1 4 3M3 7h2M3 12h2M3 17h2"/>'},
   {id:'checkin',label:'簽到報到',desc:'即時到場・自助報到',ic:'ic-brand',se:false,kind:'sec',
    svg:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M7 9h4M7 13h4"/><circle cx="16.5" cy="12" r="2.3"/>'},
   {id:'att',label:'出席率查詢',desc:'區間排行・逐月明細',ic:'ic-royal',se:false,kind:'sec',
@@ -318,6 +360,7 @@ function openTool(id){
   const t=TOOLS.find(x=>x.id===id);
   if(t.se && role!=='se'){ showLogin(); return; }
   if(t.kind==='link'){ window.open(t.url,'_blank','noopener'); return; }
+  if(t.kind==='mem'){ openMember(id); return; }
   showPage(id);
   if((id==='checkin'||id==='events') && !eventsLoaded) fetchEvents();
 }
@@ -688,6 +731,77 @@ function syncSheet(){
     document.body.appendChild(s);
   });
 }
+
+// ── 會員：我的會員卡／通訊錄（2026-09-30 App 化；後端＝02 總表綁定腳本，帳密與會員通訊錄共用 localStorage jci_acc／jci_pwd）──
+const MEM_API='https://script.google.com/macros/s/AKfycbxZFmBC8rpRV9GMg3d5rROMW7Cmf3pQZrQ74INM5WKYnnYYCwGCdLWXluFfZlwS3grz/exec';
+let memPending=null, memList=null, memCard=null, bkFilt='全部';
+function memCreds(){ return {acc:localStorage.getItem('jci_acc')||'', pwd:localStorage.getItem('jci_pwd')||''}; }
+function memApi(action,payload){ return fetch(MEM_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})}).then(r=>r.json()); }
+function escH(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function openMember(id){
+  const c=memCreds();
+  if(!c.acc||!c.pwd){ memPending=id; document.getElementById('memErr').textContent=''; document.getElementById('memModal').classList.add('on'); return; }
+  showPage(id); if(id==='card') loadCard(); else loadBook();
+}
+function memLogin(){
+  const acc=document.getElementById('memAcc').value.trim().toUpperCase(), pwd=document.getElementById('memPwd').value.trim();
+  if(!acc||!pwd){ document.getElementById('memErr').textContent='請輸入帳號與生日'; return; }
+  document.getElementById('memErr').textContent='登入中…';
+  memApi('getMembers',{acc,pwd}).then(res=>{
+    if(res.status!=='success'){ document.getElementById('memErr').textContent=res.message||'帳號或密碼錯誤'; return; }
+    localStorage.setItem('jci_acc',acc); localStorage.setItem('jci_pwd',pwd);
+    memApi('recordLoginLog',{name:(res.me&&res.me.name)||'',account:acc}).catch(()=>{});
+    memList=res.members||[]; memCard=null; document.getElementById('memModal').classList.remove('on'); paintHero();
+    if(memPending){ const p=memPending; memPending=null; openMember(p); }
+  }).catch(()=>{ document.getElementById('memErr').textContent='連線失敗，請稍後再試'; });
+}
+function memLogout(){
+  if(!confirm('登出會員？（會員通訊錄也會一起登出）')) return;
+  localStorage.removeItem('jci_acc'); localStorage.removeItem('jci_pwd'); memList=null; memCard=null; paintHero(); goHome();
+}
+function memExpired(){ localStorage.removeItem('jci_pwd'); memList=null; memCard=null; toast('登入已失效，請重新登入'); }
+function paintHero(){
+  const h=document.querySelector('.hero h2'); if(!h) return;
+  const acc=memCreds().acc, me=memList&&memList.find(m=>m.acc===acc);
+  h.textContent = me ? (me.name+' 你好 👋') : '歡迎回來 👋';
+}
+function loadCard(){
+  document.getElementById('cYr').textContent=new Date().getFullYear();
+  if(memCard) return;
+  document.getElementById('cTitle').textContent='讀取中…';
+  memApi('getMyCard',memCreds()).then(res=>{
+    if(res.status!=='success'){ document.getElementById('cTitle').textContent='讀不到會員卡資料'; if(res.status==='auth_failed') memExpired(); return; }
+    const c=memCard=res.card;
+    document.getElementById('cName').textContent=c.name; document.getElementById('cTitle').textContent=c.title;
+    const ph=document.getElementById('cPh'); if(c.photoUrl){ ph.style.backgroundImage='url("'+c.photoUrl+'")'; ph.textContent=''; } else ph.textContent=(c.name||'?').charAt(0);
+    const q=document.getElementById('cQr'); q.innerHTML='';
+    if(c.uid){ new QRCode(q,{text:c.uid,width:360,height:360,correctLevel:QRCode.CorrectLevel.H}); document.getElementById('cUid').textContent='會員卡代號 '+c.uid; }
+    else q.innerHTML='<div style="color:#333;font-size:13px;padding:60px 10px;text-align:center">尚未建立會員卡代號<br>請聯絡秘書處</div>';
+  }).catch(()=>{ document.getElementById('cTitle').textContent='連線失敗，請稍後再試'; });
+}
+function loadBook(){
+  if(memList){ bkChips(); renderBook(); return; }
+  document.getElementById('bkList').innerHTML='<div class="empty">載入中…</div>';
+  memApi('getMembers',memCreds()).then(res=>{
+    if(res.status!=='success'){ memExpired(); document.getElementById('bkList').innerHTML='<div class="empty">請重新登入</div>'; return; }
+    memList=res.members||[]; paintHero(); bkChips(); renderBook();
+  }).catch(()=>{ document.getElementById('bkList').innerHTML='<div class="empty">連線失敗，請稍後再試</div>'; });
+}
+function bkMembers(){ return (memList||[]).filter(m=>(m.role||'').indexOf('前會員')<0); }
+function bkChips(){
+  const tags=['全部']; bkMembers().forEach(m=>{ const t=(m.tag||'').trim(); if(t&&tags.indexOf(t)<0) tags.push(t); });
+  document.getElementById('bkChips').innerHTML=tags.map(t=>`<button class="${t===bkFilt?'on':''}" onclick="bkFilt='${escH(t)}';bkChips();renderBook()">${escH(t)}</button>`).join('');
+}
+function renderBook(){
+  const q=document.getElementById('bkQ').value.trim().toLowerCase();
+  const list=bkMembers().filter(m=>(bkFilt==='全部'||(m.tag||'').trim()===bkFilt) && (!q||[m.name,m.company,m.role,m.badge].join(' ').toLowerCase().indexOf(q)>=0));
+  document.getElementById('bkList').innerHTML = list.length ? list.map(m=>{
+    const tel=String(m.phone||'').replace(/[^0-9+]/g,'');
+    const av=m.photoUrl?`<div class="bk-av" style="background-image:url(&quot;${escH(m.photoUrl)}&quot;)"></div>`:`<div class="bk-av">${escH((m.name||'?').charAt(0))}</div>`;
+    return `<div class="bk-p">${av}<div><b>${escH(m.name)}</b><div class="s">${escH([m.badge||m.role,m.company].filter(Boolean).join(' · '))}</div></div>${tel?`<a class="call" href="tel:${escH(tel)}" aria-label="撥打">📞</a>`:''}</div>`;
+  }).join('') : '<div class="empty">沒有符合的會友</div>';
+}
+if(memCreds().acc&&memCreds().pwd) memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; paintHero(); } }).catch(()=>{});
 
 applyRole();
 aUse('election');
