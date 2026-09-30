@@ -289,7 +289,8 @@ body.z-15 #p-book .txt-name{font-size:33px!important} body.z-15 #p-book .txt-rol
     </div>
   </div>
 
-  <section class="page" id="p-ci-full"><iframe id="ciFrame" title="簽到報到系統" style="display:block;width:100%;height:calc(100vh - 57px);border:0;background:#fff" allow="camera; clipboard-write"></iframe></section>
+  <section class="page" id="p-ci-full"><iframe id="ciFrame" title="簽到報到系統" style="display:block;width:100%;height:calc(100vh - 57px);border:0;background:#fff" allow="camera; clipboard-write"></iframe>
+    <button id="ciBarBtn" onclick="toggleCiBar()" style="position:fixed;top:calc(62px + env(safe-area-inset-top));right:10px;z-index:40;width:auto;padding:5px 11px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:12px;font-weight:800;box-shadow:var(--shadow)">︿ 收起</button></section>
 
   <section class="page" id="p-checkin"><div class="wrap">
     <div class="card">
@@ -444,12 +445,22 @@ function openTool(id){
   if((id==='checkin'||id==='events') && !eventsLoaded) fetchEvents();
 }
 // 秘書處按「簽到報到」＝完整 jci-checkin 直接在 jci-hub 裡面開（MAX 2026-09-30「把 CHECK IN 頁面弄進去 秘書處的卡片內」）
+// 簽到頁上方標題列可收起／展開（MAX 2026-09-30 16:17）
+function toggleCiBar(force){
+  const bar=document.querySelector('.bar'), f=document.getElementById('ciFrame'), b=document.getElementById('ciBarBtn');
+  const hide = (force===undefined) ? bar.style.display!=='none' : force;
+  bar.style.display = hide ? 'none' : '';
+  f.style.height = hide ? '100vh' : 'calc(100vh - 57px)';
+  b.style.top = hide ? 'calc(6px + env(safe-area-inset-top))' : 'calc(62px + env(safe-area-inset-top))';
+  b.textContent = hide ? '﹀ 展開' : '︿ 收起';
+}
 function openCheckinFull(){
   const f=document.getElementById('ciFrame'); if(!f.src) f.src='../jci-checkin/';
   showPage('ci-full');
   document.getElementById('barH1').textContent='簽到報到'; document.getElementById('barSub').textContent='秘書處・完整簽到系統';
 }
 function showPage(id){
+  if(id!=='ci-full' && document.querySelector('.bar').style.display==='none') toggleCiBar(false);
   cur=id;
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on', p.id===(id==='home'?'home':'p-'+id)));
   const home=id==='home';
