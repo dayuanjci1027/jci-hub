@@ -845,7 +845,7 @@ function syncSheet(){
 
 // ── 會員：我的會員卡／通訊錄（2026-09-30 App 化；後端＝02 總表綁定腳本，帳密與會員通訊錄共用 localStorage jci_acc／jci_pwd）──
 const MEM_API='https://script.google.com/macros/s/AKfycbxZFmBC8rpRV9GMg3d5rROMW7Cmf3pQZrQ74INM5WKYnnYYCwGCdLWXluFfZlwS3grz/exec';
-let memPending=null, memList=null, memMe=null, memCard=null, bkFilt='全部';
+let memPending=null, memList=null, memMe=null, memCard=null, bkFilt='全部', lineBusy='';
 function memCreds(){ const s=localStorage.getItem('jci_sess'); if(s) return {session:s}; return {acc:localStorage.getItem('jci_acc')||'', pwd:localStorage.getItem('jci_pwd')||''}; }
 function memHas(){ const c=memCreds(); return !!(c.session||(c.acc&&c.pwd)); }
 // LINE 標準登入（網頁／App 共用）：跳 LINE 授權 → 帶 code 回來 → 後端驗證後發 30 天登入憑證
@@ -864,16 +864,31 @@ function lineReturn(){
   let saved=null, next=''; try{ saved=localStorage.getItem('line_state'); next=localStorage.getItem('line_next')||''; localStorage.removeItem('line_state'); localStorage.removeItem('line_next'); }catch(e){}
   if(saved && st!==saved){ toast('LINE 登入逾時，請再試一次'); return; }
   if(!next) next='card';
-  toast('LINE 登入中…');
+  // 跳回來就直接進會員卡／通訊錄頁顯示「登入中」，不停在首頁乾等（MAX 2026-09-30 23:53「LINE登入整個畫面回應超慢」）
+  lineBusy=next; showPage(next);
+  if(next==='card') document.getElementById('cTitle').textContent='LINE 登入中…';
+  else document.getElementById('list-view').innerHTML='<div class="empty">LINE 登入中…</div>';
+  // 後端一次帶回會員卡＋名單，不再多跑兩趟
   memApi('lineLogin',{code,redirectUri:LINE_BACK}).then(res=>{
-    if(res.status!=='success'){ alert(res.message||'LINE 登入失敗'); return; }
+    lineBusy='';
+    if(res.status!=='success'){ alert(res.message||'LINE 登入失敗'); goHome(); return; }
     localStorage.setItem('jci_sess',res.session); memList=null; memCard=null;
-    toast('✓ 已用 LINE 登入'); syncSheet();
-    memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||null; labelsData=r.labels||{}; paintHero(); } });
-    if(next) openMember(next);
-  }).catch(()=>alert('連線失敗，請稍後再試'));
+    if(res.members){ memList=res.members; memMe=res.me||null; labelsData=res.labels||{}; }
+    if(res.card) memCard=res.card;
+    paintHero(); toast('✓ 已用 LINE 登入');
+    openMember(next);
+    setTimeout(syncSheet,300);
+  }).catch(()=>{ lineBusy=''; alert('連線失敗，請稍後再試'); goHome(); });
 }
-function memApi(action,payload){ return fetch(MEM_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})}).then(r=>r.json()); }
+// Google 後端偶發冷啟動失敗（回錯誤網頁或卡 20–30 秒）：讀取類 15 秒沒回就重打一次、錯誤網頁也重打一次；LINE 登入不中途放棄，只在失敗時重打一次
+function memApi(action,payload,retry){
+  if(retry===undefined) retry=1;
+  const read=action!=='lineLogin'&&action!=='recordLoginLog';
+  const ac=read&&window.AbortController?new AbortController():null, tm=ac?setTimeout(()=>ac.abort(),15000):null;
+  return fetch(MEM_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload}),signal:ac?ac.signal:undefined})
+    .then(r=>r.json()).then(j=>{ if(tm) clearTimeout(tm); return j; })
+    .catch(e=>{ if(tm) clearTimeout(tm); if(retry>0) return memApi(action,payload,retry-1); throw e; });
+}
 function escH(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function openMember(id){
   const c=memCreds();
@@ -903,11 +918,15 @@ function paintHero(){
   h.textContent = (memMe&&memMe.name) ? (memMe.name+' 你好 👋') : '歡迎回來 👋';
 }
 function loadCard(){
-  if(memCard) return;
+  if(memCard){ paintCard(memCard); return; }
   document.getElementById('cTitle').textContent='讀取中…';
   memApi('getMyCard',memCreds()).then(res=>{
     if(res.status!=='success'){ document.getElementById('cTitle').textContent='讀不到會員卡資料'; if(res.status==='auth_failed') memExpired(); return; }
-    const c=memCard=res.card, t=String(c.title||'');
+    paintCard(memCard=res.card);
+  }).catch(()=>{ document.getElementById('cTitle').textContent='連線失敗，請稍後再試'; });
+}
+function paintCard(c){
+  { const t=String(c.title||'');
     // 同 LINE@ 會員卡：主席、或會長（不含「副」）＝黑金卡
     document.getElementById('lcard').classList.toggle('vip', t.indexOf('主席')>=0 || (t.indexOf('會長')>=0 && t.indexOf('副')<0));
     document.getElementById('cName').textContent=c.name; document.getElementById('cTitle').textContent=t||'會員';
@@ -915,7 +934,7 @@ function loadCard(){
     const q=document.getElementById('cQr'); q.innerHTML='';
     if(c.uid){ new QRCode(q,{text:c.uid,width:440,height:440,correctLevel:QRCode.CorrectLevel.H}); document.getElementById('cUid').textContent=c.uid; }
     else q.innerHTML='<div style="color:#999;font-size:13px;padding:80px 10px">尚未建立會員卡代號<br>請聯絡秘書處</div>';
-  }).catch(()=>{ document.getElementById('cTitle').textContent='連線失敗，請稍後再試'; });
+  }
 }
 
 // ── 通訊錄：整套照搬會員通訊錄 v6.4（jci-member）的清單、詳細頁、篩選排序、放大字體 ──
@@ -1083,7 +1102,7 @@ aUse('election');
 initCandSelects();
 renderCands();
 renderTrainees();
-showPage('home');
+if(!lineBusy) showPage('home');
 fetchEvents();
 syncSheet();
 </script>
