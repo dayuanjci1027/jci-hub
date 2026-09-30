@@ -290,7 +290,7 @@ body.z-15 #p-book .txt-name{font-size:33px!important} body.z-15 #p-book .txt-rol
   </div>
 
   <section class="page" id="p-ci-full"><iframe id="ciFrame" title="簽到報到系統" style="display:block;width:100%;height:calc(100vh - 57px);border:0;background:#fff" allow="camera; clipboard-write"></iframe>
-    <button id="ciBarBtn" onclick="toggleCiBar()" style="position:fixed;top:calc(62px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;width:auto;padding:5px 11px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:12px;font-weight:800;box-shadow:var(--shadow)">︿ 收起</button></section>
+    <button id="ciBarBtn" onclick="toggleCiBar()" aria-label="收起／展開上方標題列" style="position:fixed;top:calc(62px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:18px;font-weight:800;line-height:40px;text-align:center;box-shadow:var(--shadow)">︿</button></section>
 
   <section class="page" id="p-checkin"><div class="wrap">
     <div class="card">
@@ -407,9 +407,7 @@ const TOOLS=[
   {id:'gongwen',label:'發公文',desc:'開會通知一鍵產生',ic:'ic-brand',se:true,kind:'link',url:GONGWEN_URL,
    svg:'<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/>'},
   {id:'label',label:'郵寄標籤產生器',desc:'會員大會寄送標籤',ic:'ic-gold',se:true,kind:'link',url:LABEL_URL,
-   svg:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 13h4"/>'},
-  {id:'proto',label:'秘書處工作台',desc:'待辦・會議 SOP（原型）',ic:'ic-gold',se:true,kind:'link',url:PROTO_URL,
-   svg:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>'}
+   svg:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 13h4"/>'}
 ];
 
 let role = (sessionStorage.getItem('jci-role')==='se' && fbAuthLoad()) ? 'se':'view';
@@ -452,7 +450,7 @@ function toggleCiBar(force){
   bar.style.display = hide ? 'none' : '';
   f.style.height = hide ? '100vh' : 'calc(100vh - 57px)';
   b.style.top = hide ? 'calc(6px + env(safe-area-inset-top))' : 'calc(62px + env(safe-area-inset-top))';
-  b.textContent = hide ? '﹀ 展開' : '︿ 收起';
+  b.textContent = hide ? '﹀' : '︿';
 }
 function openCheckinFull(){
   const f=document.getElementById('ciFrame'); if(!f.src) f.src='../jci-checkin/';
