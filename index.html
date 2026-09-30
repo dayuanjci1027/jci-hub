@@ -230,6 +230,9 @@ button{cursor:pointer}
 #jm-detail .dt-label{width:68px;text-align:justify;text-align-last:justify;color:var(--muted);font-weight:500;flex-shrink:0;margin-right:20px}
 #jm-detail .dt-val{flex:1;color:var(--text);font-weight:500;word-break:break-all}
 body.noscroll{overflow:hidden}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:6px 0 8px}
+.chips button{width:auto;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:5px 12px;font-size:12px;white-space:nowrap}
+.chips button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 body.z-12 #p-book .txt-name{font-size:26px!important} body.z-12 #p-book .txt-role{font-size:17px!important} body.z-12 #p-book .txt-phone{font-size:19px!important;font-weight:700} body.z-12 #p-book .tag-yb{font-size:15px!important} body.z-12 #p-book .search-input{font-size:19px!important} body.z-12 #jm-detail .dt-name{font-size:38px!important} body.z-12 #jm-detail .dt-row{font-size:19px!important;padding:16px 0!important}
 body.z-15 #p-book .txt-name{font-size:33px!important} body.z-15 #p-book .txt-role{font-size:21px!important} body.z-15 #p-book .txt-phone{font-size:24px!important;font-weight:700} body.z-15 #p-book .tag-yb{font-size:18px!important} body.z-15 #p-book .btn-call{font-size:18px!important;padding:8px 20px!important} body.z-15 #p-book .search-input{font-size:22px!important} body.z-15 #jm-detail .dt-name{font-size:44px!important} body.z-15 #jm-detail .dt-row{font-size:22px!important;padding:18px 0!important}
 </style>
@@ -289,6 +292,12 @@ body.z-15 #p-book .txt-name{font-size:33px!important} body.z-15 #p-book .txt-rol
       </div>
     </div>
   </div>
+
+  <section class="page" id="p-secwork"><div class="wrap">
+    <div class="seg" id="swSeg"><button data-t="sop" class="on" onclick="swSetTab('sop')">年度時程</button><button data-t="tasks" onclick="swSetTab('tasks')">秘書處分工</button><button data-t="info" onclick="swSetTab('info')">帳號密碼</button></div>
+    <div id="swBody"></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn small ghost" style="width:auto" onclick="swData=null;swLoad(true)">⟳ 重新讀取試算表</button></div>
+  </div></section>
 
   <section class="page" id="p-ci-full"><iframe id="ciFrame" title="簽到報到系統" style="display:block;width:100%;height:calc(100vh - 57px);border:0;background:#fff" allow="camera; clipboard-write"></iframe>
     <button id="ciBarBtn" onclick="toggleCiBar()" aria-label="收起／展開上方標題列" style="position:fixed;top:calc(62px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:18px;font-weight:800;line-height:40px;text-align:center;box-shadow:var(--shadow)">︿</button></section>
@@ -405,6 +414,8 @@ const TOOLS=[
    svg:'<path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7z"/><path d="M9 12l2 2 4-4"/>'},
   {id:'trainee',label:'見習追蹤',desc:'見習通過條件進度',ic:'ic-teal',se:true,kind:'sec',
    svg:'<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.2 3.2-4.8 6.5-4.8s5.7 1.6 6.5 4.8"/><path d="M16 4l2 2 3-3"/>'},
+  {id:'secwork',label:'秘書長工作台',desc:'年度時程・分工・帳號密碼',ic:'ic-royal',se:true,kind:'sec',
+   svg:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M8 13h8M8 16h5"/>'},
   {id:'gongwen',label:'發公文',desc:'開會通知一鍵產生',ic:'ic-brand',se:true,kind:'link',url:GONGWEN_URL,
    svg:'<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/>'},
   {id:'label',label:'郵寄標籤產生器',desc:'會員大會寄送標籤',ic:'ic-gold',se:true,kind:'link',url:LABEL_URL,
@@ -439,6 +450,7 @@ function openTool(id){
   if(t.kind==='link'){ window.open(t.url,'_blank','noopener'); return; }
   if(t.kind==='mem'){ openMember(id); return; }
   if(id==='checkin'){ openCheckinFull(); return; }
+  if(id==='secwork'){ openSecWork(); return; }
   showPage(id);
   if(id==='checkin' && role==='se'){ openCheckinFull(); return; }
   if((id==='checkin'||id==='events') && !eventsLoaded) fetchEvents();
@@ -982,6 +994,78 @@ function filterAndSort(){
   }
   renderList(f);
 }
+// ── 秘書長工作台（秘書處限定；資料即時讀「01-秘書長SOP」「重要資訊管理」兩張表）──
+let swData=null, swTab='sop', swPerson='全部', swCat='全部';
+function openSecWork(){ showPage('secwork'); swLoad(); }
+async function swLoad(force){
+  if(swData&&!force){ swRender(); return; }
+  document.getElementById('swBody').innerHTML='<div class="empty">讀取中…</div>';
+  try{
+    const tok=await fbToken(); if(!tok){ showLogin(); return; }
+    let res=null;
+    for(let k=0;k<3&&!res;k++){ try{ res=await memApi('getSecWork',{fbIdToken:tok,withSecrets:true}); }catch(e){} }
+    if(!res){ document.getElementById('swBody').innerHTML='<div class="empty">連線失敗，請稍後再試</div>'; return; }
+    if(res.status!=='success'&&res.status!=='ok'){ document.getElementById('swBody').innerHTML='<div class="empty">'+escH(res.message||'讀取失敗')+'</div>'; return; }
+    swData=res; swRender();
+  }catch(e){ document.getElementById('swBody').innerHTML='<div class="empty">讀取失敗</div>'; }
+}
+function swSetTab(t){ swTab=t; document.querySelectorAll('#swSeg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); swRender(); }
+function swHeader(rows,keys){ for(let i=0;i<rows.length;i++){ const r=rows[i].map(x=>String(x||'').trim()); if(keys.every(k=>r.some(c=>c.indexOf(k)>=0))) return i; } return -1; }
+function swCol(h,k){ return h.findIndex(c=>c.indexOf(k)>=0); }
+function swRender(){
+  const el=document.getElementById('swBody'); if(!swData){ el.innerHTML=''; return; }
+  if(swTab==='sop') el.innerHTML=swSop(); else if(swTab==='tasks') el.innerHTML=swTasks(); else el.innerHTML=swInfo();
+}
+function swSop(){
+  const rows=swData.sop||[], hi=swHeader(rows,['時間點','活動節點']); if(hi<0) return '<div class="empty">找不到時程表頭</div>';
+  const h=rows[hi].map(x=>String(x||'').trim()), cY=swCol(h,'年度'), cT=swCol(h,'時間點'), cN=swCol(h,'活動節點'), cC=swCol(h,'內容'), cR=swCol(h,'備註');
+  const now=new Date().getMonth()+1, nxt=now%12+1; let y='',t='',html='',lastKey='';
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i]; const g=c=>c>=0?String(r[c]||'').trim():'';
+    if(g(cY)) y=g(cY); if(g(cT)) t=g(cT);
+    const node=g(cN), cont=g(cC), rem=g(cR); if(!node&&!cont) continue;
+    const m=(t.match(/(\d{1,2})\s*月/)||[])[1]; const mm=m?+m:0;
+    const tag= mm===now?'<span class="chip brand">本月</span>':mm===nxt?'<span class="chip warn">下個月</span>':'';
+    const key=y+'|'+t; if(key!==lastKey){ html+=`<div class="sec" style="margin:14px 2px 6px">${escH(y)}・${escH(t)} ${tag}</div>`; lastKey=key; }
+    html+=`<div class="card" style="padding:12px 14px;margin-bottom:8px${mm===now?';border:1.5px solid var(--brand)':''}"><b>${escH(node||'（未命名）')}</b>${cont?`<div style="margin-top:4px;white-space:pre-wrap">${escH(cont)}</div>`:''}${rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(rem)}</div>`:''}</div>`;
+  }
+  return html||'<div class="empty">沒有資料</div>';
+}
+function swTasks(){
+  const rows=swData.tasks||[], hi=swHeader(rows,['負責人員']); if(hi<0) return '<div class="empty">找不到分工表頭</div>';
+  const h=rows[hi].map(x=>String(x||'').trim()), cNo=swCol(h,'編號'), cP=swCol(h,'負責人員'), cK=swCol(h,'大項分類'), cR=swCol(h,'備註');
+  const cSub=h.map((x,i)=>x.indexOf('下層')>=0?i:-1).filter(i=>i>=0);
+  let k='', items=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i], g=c=>c>=0?String(r[c]||'').trim():''; if(g(cK)) k=g(cK);
+    const sub=cSub.map(c=>g(c)).filter(Boolean); if(!sub.length&&!g(cP)) continue;
+    items.push({no:g(cNo),p:g(cP)||'（未指定）',k:k||'其他',sub,rem:g(cR)});
+  }
+  const people=['全部',...new Set(items.map(x=>x.p))], cats=['全部',...new Set(items.map(x=>x.k))];
+  const chips=(arr,cur,fn)=>`<div class="chips">${arr.map(a=>`<button class="${a===cur?'on':''}" onclick="${fn}('${escH(a)}')">${escH(a)}</button>`).join('')}</div>`;
+  const list=items.filter(x=>(swPerson==='全部'||x.p===swPerson)&&(swCat==='全部'||x.k===swCat));
+  return chips(people,swPerson,'swSetPerson')+chips(cats,swCat,'swSetCat')+(list.map(x=>`<div class="card" style="padding:12px 14px;margin-bottom:8px"><div class="meta">${escH(x.no?'#'+x.no+'・':'')}${escH(x.k)}・${escH(x.p)}</div><b>${escH(x.sub.join(' › '))}</b>${x.rem?`<div class="meta" style="margin-top:4px;white-space:pre-wrap">備註：${escH(x.rem)}</div>`:''}</div>`).join('')||'<div class="empty">沒有符合的工作</div>');
+}
+function swSetPerson(p){ swPerson=p; swRender(); }
+function swSetCat(c){ swCat=c; swRender(); }
+function swInfo(){
+  const rows=swData.info||[], hi=swHeader(rows,['名稱']); if(hi<0) return '<div class="empty">找不到帳密表頭</div>';
+  const h=rows[hi].map(x=>String(x||'').trim()), cN=swCol(h,'名稱'), cL=swCol(h,'帳密'), cV=swCol(h,'內容'), cR=swCol(h,'備註');
+  let name='', groups=[], cur=null;
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i], g=c=>c>=0?String(r[c]||'').trim():'';
+    if(g(cN)&&g(cN)!==name){ name=g(cN); cur={name,lines:[],rem:''}; groups.push(cur); }
+    if(!cur) continue; const lab=g(cL), val=g(cV); if(lab||val) cur.lines.push({lab,val}); if(g(cR)) cur.rem+=(cur.rem?'\n':'')+g(cR);
+  }
+  window.__swSecrets=[];
+  const line=l=>{ const secret=/密/.test(l.lab); const isUrl=/^https?:\/\//.test(l.val);
+    if(secret){ const i=window.__swSecrets.push(l.val)-1; return `<div class="row" style="gap:8px;align-items:center;margin-top:6px"><span class="meta" style="width:36px">${escH(l.lab)}</span><span id="swS${i}" style="flex:1;font-family:monospace">●●●●●●</span><button class="btn small ghost" style="width:auto" onclick="swShow(${i})">顯示</button><button class="btn small ghost" style="width:auto" onclick="swCopy(${i})">複製</button></div>`; }
+    return `<div class="row" style="gap:8px;margin-top:6px"><span class="meta" style="width:36px">${escH(l.lab)}</span><span style="flex:1;word-break:break-all">${isUrl?`<a href="${escH(l.val)}" target="_blank" rel="noopener" style="color:var(--brand)">${escH(l.val)}</a>`:escH(l.val)}</span></div>`; };
+  return '<div class="note" style="margin:0 0 10px">⚠️ 內含密碼：只有秘書處登入看得到，請勿截圖外傳。</div>'+(groups.map(gp=>`<div class="card" style="padding:12px 14px;margin-bottom:8px"><b style="white-space:pre-wrap">${escH(gp.name)}</b>${gp.lines.map(line).join('')}${gp.rem?`<div class="meta" style="margin-top:6px;white-space:pre-wrap">備註：${escH(gp.rem)}</div>`:''}</div>`).join('')||'<div class="empty">沒有資料</div>');
+}
+function swShow(i){ const e=document.getElementById('swS'+i); if(!e) return; e.textContent = e.textContent.startsWith('●') ? window.__swSecrets[i] : '●●●●●●'; }
+function swCopy(i){ try{ navigator.clipboard.writeText(window.__swSecrets[i]).then(()=>toast('✓ 已複製')); }catch(e){ toast('無法複製'); } }
+
 lineReturn();
 if(memHas()) memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||null; labelsData=r.labels||{}; paintHero(); } }).catch(()=>{});
 
