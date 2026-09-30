@@ -577,8 +577,8 @@ function renderHeroLive(){
   const e=open[0];
   const live=currentEvent&&currentEvent.id===e.id?gList().filter(g=>g.group==='Internal'):null;
   const cnt=live?`${live.filter(g=>g.arrived).length}/${live.length} 到場`:'進行中';
-  box.innerHTML=`<div class="live"><div class="dot"></div><div class="lt"><b>${e.name}</b><div class="num">${e.eventDate}・${cnt}</div></div>
-    <button class="go" onclick="goLive('${e.id}')">前往簽到</button></div>`;
+  // 2026-09-30 MAX「前往簽到那個 請幫我拔掉」：只留進行中活動資訊，不放按鈕
+  box.innerHTML=`<div class="live"><div class="dot"></div><div class="lt"><b>${e.name}</b><div class="num">${e.eventDate}・${cnt}</div></div></div>`;
 }
 function goLive(id){ openTool('checkin'); const sel=document.getElementById('ciEvent'); if(sel){ sel.value=id; loadEvent(); } }
 function renderEventsPage(){
