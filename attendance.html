@@ -109,12 +109,23 @@ details.rules .card{margin-top:8px;font-size:12.5px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 <script src="roster-auth.js"></script>
+
+<style id="hub-theme">/* 2026-09-30 MAX「統一風格」：配色與頁首對齊會務系統首頁（index.html） */
+:root{--brand:#e94560;--brand-d:#c7304a;--royal:#0f3460;--teal:#2a9d8f;--gold:#EFC40F;--ink:#1f2937;--on-brand:#FFFFFF;--bg:#e3f2fd;--bgpaint:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 30%,#e1f0fb 70%,#f5faff 100%);--surface:#FFFFFF;--surface2:#f3f4f6;--sunk:#fde8ec;--text:#1f2937;--muted:#4b5563;--faint:#6b7280;--line:rgba(0,0,0,.12);--ok:#0E8F63;--ok-bg:#E1F4EC;--warn:#A87C08;--warn-bg:#FBF1D3;--bad:#CB3A31;--bad-bg:#FBE7E5;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.07);--blue:#e94560;--on-blue:#FFFFFF;--info:#0f3460;--info-bg:#E5EEF8;}
+@media (prefers-color-scheme:dark){:root{--brand:#e94560;--brand-d:#ff6b81;--royal:#0f3460;--teal:#4fc3b5;--gold:#F2CE34;--ink:#0f0f0f;--on-brand:#FFFFFF;--bg:#0f0f0f;--bgpaint:#0f0f0f;--surface:#1a1a2e;--surface2:#1e1e3a;--sunk:#2a1a2a;--text:#eeeeee;--muted:#9ca3af;--faint:#6b7280;--line:rgba(255,255,255,.1);--ok:#43C68E;--ok-bg:#123328;--warn:#E7B23F;--warn-bg:#332916;--bad:#E9645B;--bad-bg:#38201F;--shadow:0 1px 2px rgba(0,0,0,.45);--blue:#e94560;--on-blue:#FFFFFF;--info:#6FA6E0;--info-bg:#1B2C42;}}
+:root[data-theme="light"]{--brand:#e94560;--brand-d:#c7304a;--royal:#0f3460;--teal:#2a9d8f;--gold:#EFC40F;--ink:#1f2937;--on-brand:#FFFFFF;--bg:#e3f2fd;--bgpaint:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 30%,#e1f0fb 70%,#f5faff 100%);--surface:#FFFFFF;--surface2:#f3f4f6;--sunk:#fde8ec;--text:#1f2937;--muted:#4b5563;--faint:#6b7280;--line:rgba(0,0,0,.12);--ok:#0E8F63;--ok-bg:#E1F4EC;--warn:#A87C08;--warn-bg:#FBF1D3;--bad:#CB3A31;--bad-bg:#FBE7E5;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.07);--blue:#e94560;--on-blue:#FFFFFF;--info:#0f3460;--info-bg:#E5EEF8;}
+:root[data-theme="dark"]{--brand:#e94560;--brand-d:#ff6b81;--royal:#0f3460;--teal:#4fc3b5;--gold:#F2CE34;--ink:#0f0f0f;--on-brand:#FFFFFF;--bg:#0f0f0f;--bgpaint:#0f0f0f;--surface:#1a1a2e;--surface2:#1e1e3a;--sunk:#2a1a2a;--text:#eeeeee;--muted:#9ca3af;--faint:#6b7280;--line:rgba(255,255,255,.1);--ok:#43C68E;--ok-bg:#123328;--warn:#E7B23F;--warn-bg:#332916;--bad:#E9645B;--bad-bg:#38201F;--shadow:0 1px 2px rgba(0,0,0,.45);--blue:#e94560;--on-blue:#FFFFFF;--info:#6FA6E0;--info-bg:#1B2C42;}
+body{background:var(--bgpaint);background-attachment:fixed;color:var(--text)}
+.hubback{background:none;border:none;color:var(--brand);display:inline-flex;align-items:center;gap:1px;font-size:14px;font-weight:700;padding:4px 2px;text-decoration:none;flex:none;white-space:nowrap}
+.hublogo{height:38px;width:auto;border-radius:8px;flex:none;display:block}
+.appbar{border-bottom:1px solid var(--line);gap:6px;padding:11px 10px}.appbar>div:not(.spacer){min-width:0}.appbar h1,.appbar .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.appbar .btn{white-space:nowrap;flex:none}
+</style>
 </head>
 <body>
 
 <div id="shell">
   <header class="appbar">
-    <div class="mark">JCI</div>
+    <a class="hubback" href="index.html"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>會務系統</a><img class="hublogo" src="logo-bar.png" alt="JCI Dayuan">
     <div>
       <h1>出席率查詢</h1>
       <div class="sub" id="dataStatus">資料快照</div>

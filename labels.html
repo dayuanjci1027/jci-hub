@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>大園國際青年商會｜會員大會郵寄標籤產生器（鶴屋 No.87）</title>
 <style>
   :root { --labelW: 105mm; --labelH: 33mm; }
@@ -76,10 +77,31 @@
   }
 </style>
 <script src="roster-auth.js"></script>
+
+<style id="hub-theme">/* 2026-09-30 MAX「統一風格」：配色與頁首對齊會務系統首頁（index.html） */
+:root{--brand:#e94560;--brand-d:#c7304a;--royal:#0f3460;--teal:#2a9d8f;--gold:#EFC40F;--ink:#1f2937;--on-brand:#FFFFFF;--bg:#e3f2fd;--bgpaint:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 30%,#e1f0fb 70%,#f5faff 100%);--surface:#FFFFFF;--surface2:#f3f4f6;--sunk:#fde8ec;--text:#1f2937;--muted:#4b5563;--faint:#6b7280;--line:rgba(0,0,0,.12);--ok:#0E8F63;--ok-bg:#E1F4EC;--warn:#A87C08;--warn-bg:#FBF1D3;--bad:#CB3A31;--bad-bg:#FBE7E5;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.07);}
+@media (prefers-color-scheme:dark){:root{--brand:#e94560;--brand-d:#ff6b81;--royal:#0f3460;--teal:#4fc3b5;--gold:#F2CE34;--ink:#0f0f0f;--on-brand:#FFFFFF;--bg:#0f0f0f;--bgpaint:#0f0f0f;--surface:#1a1a2e;--surface2:#1e1e3a;--sunk:#2a1a2a;--text:#eeeeee;--muted:#9ca3af;--faint:#6b7280;--line:rgba(255,255,255,.1);--ok:#43C68E;--ok-bg:#123328;--warn:#E7B23F;--warn-bg:#332916;--bad:#E9645B;--bad-bg:#38201F;--shadow:0 1px 2px rgba(0,0,0,.45);}}
+:root[data-theme="light"]{--brand:#e94560;--brand-d:#c7304a;--royal:#0f3460;--teal:#2a9d8f;--gold:#EFC40F;--ink:#1f2937;--on-brand:#FFFFFF;--bg:#e3f2fd;--bgpaint:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 30%,#e1f0fb 70%,#f5faff 100%);--surface:#FFFFFF;--surface2:#f3f4f6;--sunk:#fde8ec;--text:#1f2937;--muted:#4b5563;--faint:#6b7280;--line:rgba(0,0,0,.12);--ok:#0E8F63;--ok-bg:#E1F4EC;--warn:#A87C08;--warn-bg:#FBF1D3;--bad:#CB3A31;--bad-bg:#FBE7E5;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.07);}
+:root[data-theme="dark"]{--brand:#e94560;--brand-d:#ff6b81;--royal:#0f3460;--teal:#4fc3b5;--gold:#F2CE34;--ink:#0f0f0f;--on-brand:#FFFFFF;--bg:#0f0f0f;--bgpaint:#0f0f0f;--surface:#1a1a2e;--surface2:#1e1e3a;--sunk:#2a1a2a;--text:#eeeeee;--muted:#9ca3af;--faint:#6b7280;--line:rgba(255,255,255,.1);--ok:#43C68E;--ok-bg:#123328;--warn:#E7B23F;--warn-bg:#332916;--bad:#E9645B;--bad-bg:#38201F;--shadow:0 1px 2px rgba(0,0,0,.45);}
+body{background:var(--bgpaint);background-attachment:fixed;color:var(--text)}
+.hubback{background:none;border:none;color:var(--brand);display:inline-flex;align-items:center;gap:1px;font-size:14px;font-weight:700;padding:4px 2px;text-decoration:none;flex:none;white-space:nowrap}
+.hublogo{height:38px;width:auto;border-radius:8px;flex:none;display:block}
+.hubbar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:11px 10px;display:flex;align-items:center;gap:6px;min-height:56px}.hubtitle{min-width:0}.hubtitle h1{font-size:16px;margin:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hubsub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app{max-width:980px;padding:16px 12px 60px}.sub{color:var(--muted)}
+.card{background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.card h2{color:var(--text)}
+button.primary{background:var(--brand);color:var(--on-brand);border-radius:10px}button.primary:disabled{background:var(--faint)}
+button.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:10px}
+table.members th{background:var(--surface2)}table.members th,table.members td{border-bottom-color:var(--line)}.tablewrap{border-color:var(--line)}.count{color:var(--muted)}
+#app input,#app select{background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:6px}
+.sheet{color:#222}
+#preview{max-width:100vw;overflow-x:auto}
+@media print{.hubbar{display:none}body{background:#fff}#preview{max-width:none;overflow:visible}}
+</style>
 </head>
 <body>
+<header class="hubbar"><a class="hubback" href="index.html"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>會務系統</a><img class="hublogo" src="logo-bar.png" alt="JCI Dayuan"><div class="hubtitle"><h1>郵寄標籤產生器</h1><div class="hubsub">大園青商 會務系統・會員大會寄送標籤</div></div></header>
 <div id="app">
-  <h1>會員大會郵寄標籤產生器</h1>
   <div class="sub">
     大園國際青年商會秘書處｜支援標籤紙：鶴屋 87 號（33×105mm・18格）、62 號（27×105mm・22格）、自訂尺寸｜
     資料來源：<a href="https://docs.google.com/spreadsheets/d/1T-GgMP3M_FwdSul_Wg8xGCFHdDY78gHoLIpi-kki08Y/" target="_blank">會員名冊試算表</a>
@@ -193,13 +215,13 @@ const perSheet = () => { const s = currentSpec(); return s.cols * s.rows; };
   if (has) return;
   document.addEventListener('DOMContentLoaded', () => {
     const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:#1f2937;z-index:9999;display:flex;align-items:center;justify-content:center';
-    ov.innerHTML = '<div style="background:#fff;border-radius:12px;padding:32px 40px;text-align:center;max-width:340px">' +
+    ov.style.cssText = 'position:fixed;inset:0;background:var(--bgpaint);z-index:9999;display:flex;align-items:center;justify-content:center';
+    ov.innerHTML = '<div style="background:var(--surface);color:var(--text);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:28px 32px;text-align:center;max-width:340px">' +
       '<div style="font-size:18px;font-weight:bold;margin-bottom:6px">秘書處登入</div>' +
-      '<div style="font-size:13px;color:#666;margin-bottom:16px">本工具含會員個資，請輸入秘書處通行碼<br>（在 jci-hub 登入過秘書處就不用再輸入）</div>' +
-      '<input id="gatePw" type="password" autocomplete="off" style="font-size:18px;padding:8px;width:180px;text-align:center;border:1px solid #ccc;border-radius:6px">' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:16px">本工具含會員個資，請輸入秘書處通行碼<br>（在 jci-hub 登入過秘書處就不用再輸入）</div>' +
+      '<input id="gatePw" type="password" autocomplete="off" style="font-size:18px;padding:8px;width:180px;text-align:center;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--text)">' +
       '<div id="gateErr" style="color:#c00000;font-size:13px;height:18px;margin-top:6px"></div>' +
-      '<button id="gateBtn" style="font-size:15px;padding:8px 28px;border:none;border-radius:6px;background:#1f4e79;color:#fff;cursor:pointer">進入</button></div>';
+      '<button id="gateBtn" style="font-size:15px;padding:8px 28px;border:none;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer">進入</button><div style="margin-top:14px"><a href="index.html" style="color:var(--brand);font-size:14px;font-weight:700;text-decoration:none">‹ 回會務系統</a></div></div>';
     document.body.appendChild(ov);
     const pw = ov.querySelector('#gatePw'), err = ov.querySelector('#gateErr');
     const tryEnter = () => {
