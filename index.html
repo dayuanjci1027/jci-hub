@@ -388,7 +388,7 @@ const TOOLS=[
    svg:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5.5 16c.6-1.6 1.7-2.4 3-2.4s2.4.8 3 2.4M14 10h4.5M14 13.5h3"/>'},
   {id:'book',label:'通訊錄',desc:'找會友電話・公司',ic:'ic-teal',se:false,kind:'mem',
    svg:'<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17c.8-2 2.2-3 4-3s3.2 1 4 3M3 7h2M3 12h2M3 17h2"/>'},
-  {id:'checkin',label:'簽到報到',desc:'即時到場・自助報到',ic:'ic-brand',se:false,kind:'sec',
+  {id:'checkin',label:'簽到報到',desc:'即時到場・自助報到',ic:'ic-brand',se:true,kind:'sec',
    svg:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M7 9h4M7 13h4"/><circle cx="16.5" cy="12" r="2.3"/>'},
   {id:'att',label:'出席率查詢',desc:'區間排行・逐月明細',ic:'ic-royal',se:false,kind:'sec',
    svg:'<path d="M4 20V10M10 20V4M16 20v-7M20 20H3"/>'},
@@ -433,6 +433,7 @@ function openTool(id){
   if(t.se && role!=='se'){ showLogin(); return; }
   if(t.kind==='link'){ window.open(t.url,'_blank','noopener'); return; }
   if(t.kind==='mem'){ openMember(id); return; }
+  if(id==='checkin'){ openCheckinFull(); return; }
   showPage(id);
   if(id==='checkin' && role==='se'){ openCheckinFull(); return; }
   if((id==='checkin'||id==='events') && !eventsLoaded) fetchEvents();
@@ -467,7 +468,7 @@ function renderLauncher(){
     </div>`).join('');
   document.getElementById('homeNote').innerHTML=role==='se'
     ? '你目前是<b style="color:var(--brand)">秘書處</b>權限，可操作簽到、補登、選務判定等全部功能。點右上角可登出。'
-    : '你目前是<b>會員</b>檢視。簽到、出席率、活動皆可查看。編輯或秘書處功能請點右上角「會員」登入。';
+    : '你目前是<b>會員</b>檢視：會員卡、通訊錄、出席率、活動紀錄。秘書處（含簽到報到）請點右上角「會員」登入。';
 }
 
 async function fbGet(p){ const t=await fbToken(); const r=await fetch(`${FB}${p}.json?auth=${encodeURIComponent(t)}&_=${Date.now()}`); if(!r.ok) throw new Error('FB '+r.status); return r.json(); }
