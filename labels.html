@@ -185,25 +185,33 @@ function currentSpec() {
   };
 }
 const perSheet = () => { const s = currentSpec(); return s.cols * s.rows; };
-const GATE_PASSWORD = '1027'; // 進入密碼（與簽到系統相同）；設為空字串 '' 可停用密碼
-
-// 密碼閘門：因工具會列出全體會員姓名住址，公開網址必須有基本門檻
+// 2026-09-30：拿掉寫死的 1027 密碼鎖，改成「秘書處登入」把關（與 jci-hub 右上角秘書處登入同一組，登過就直接進）。
+// 名冊由後端驗證秘書處憑證後才回傳（roster-auth.js）。
 (function gate() {
-  if (!GATE_PASSWORD || localStorage.getItem('jciLabelAuth') === GATE_PASSWORD) return;
+  var FB_KEY = 'AIzaSyDLq7SrkQaCnjtsFArh0leKPJRbPFZTZnk', EMAIL = 'secretary@checkin2025-f0bb9.firebaseapp.com';
+  var has = false; try { has = !!JSON.parse(localStorage.getItem('jci-fb-auth') || 'null'); } catch (e) {}
+  if (has) return;
   document.addEventListener('DOMContentLoaded', () => {
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:#1f2937;z-index:9999;display:flex;align-items:center;justify-content:center';
-    ov.innerHTML = '<div style="background:#fff;border-radius:12px;padding:32px 40px;text-align:center;max-width:320px">' +
-      '<div style="font-size:18px;font-weight:bold;margin-bottom:6px">秘書處內部工具</div>' +
-      '<div style="font-size:13px;color:#666;margin-bottom:16px">本工具含會員個資，請輸入密碼</div>' +
-      '<input id="gatePw" type="password" inputmode="numeric" style="font-size:18px;padding:8px;width:140px;text-align:center;border:1px solid #ccc;border-radius:6px">' +
+    ov.innerHTML = '<div style="background:#fff;border-radius:12px;padding:32px 40px;text-align:center;max-width:340px">' +
+      '<div style="font-size:18px;font-weight:bold;margin-bottom:6px">秘書處登入</div>' +
+      '<div style="font-size:13px;color:#666;margin-bottom:16px">本工具含會員個資，請輸入秘書處通行碼<br>（在 jci-hub 登入過秘書處就不用再輸入）</div>' +
+      '<input id="gatePw" type="password" autocomplete="off" style="font-size:18px;padding:8px;width:180px;text-align:center;border:1px solid #ccc;border-radius:6px">' +
       '<div id="gateErr" style="color:#c00000;font-size:13px;height:18px;margin-top:6px"></div>' +
       '<button id="gateBtn" style="font-size:15px;padding:8px 28px;border:none;border-radius:6px;background:#1f4e79;color:#fff;cursor:pointer">進入</button></div>';
     document.body.appendChild(ov);
-    const pw = ov.querySelector('#gatePw');
+    const pw = ov.querySelector('#gatePw'), err = ov.querySelector('#gateErr');
     const tryEnter = () => {
-      if (pw.value === GATE_PASSWORD) { localStorage.setItem('jciLabelAuth', GATE_PASSWORD); ov.remove(); }
-      else { ov.querySelector('#gateErr').textContent = '密碼錯誤'; pw.select(); }
+      err.textContent = '驗證中…';
+      fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB_KEY, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: EMAIL, password: pw.value.trim(), returnSecureToken: true })
+      }).then(r => r.json()).then(d => {
+        if (!d.idToken) { err.textContent = '通行碼錯誤'; pw.select(); return; }
+        localStorage.setItem('jci-fb-auth', JSON.stringify({ id: d.idToken, rt: d.refreshToken, exp: Date.now() + (+d.expiresIn) * 1000 }));
+        ov.remove();
+      }).catch(() => { err.textContent = '連線失敗，請再試一次'; });
     };
     ov.querySelector('#gateBtn').addEventListener('click', tryEnter);
     pw.addEventListener('keydown', e => { if (e.key === 'Enter') tryEnter(); });
