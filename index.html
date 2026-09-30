@@ -11,6 +11,8 @@
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#e3f2fd" media="(prefers-color-scheme: light)">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 /* 配色：iPinTour 黑／白兩套（MAX 2026-09-30「IPINTOUR有 黑色跟白色 的選項…跟著IPHONE手機設定的黑或白變更」）*/
 :root{
@@ -373,7 +375,10 @@ async function fbToken(){
   const d=await r.json(); if(!d.id_token){ fbAuthSave(null); return ''; }
   a={id:d.id_token, rt:d.refresh_token, exp:Date.now()+(+d.expires_in)*1000}; fbAuthSave(a); return a.id;
 }
+// 同一組秘書處登入也寫進 Firebase SDK（與 jci-checkin 同網域共用），在 jci-hub 裡開簽到系統不用再輸入通行碼
+function fbSdk(){ try{ if(!firebase.apps.length) firebase.initializeApp({apiKey:FB_KEY,authDomain:'checkin2025-f0bb9.firebaseapp.com',databaseURL:FB}); return firebase.auth(); }catch(e){ return null; } }
 async function fbSignIn(pw){
+  try{ const a=fbSdk(); if(a) await a.signInWithEmailAndPassword(SECRETARY_EMAIL,pw); }catch(e){}
   const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:SECRETARY_EMAIL,password:pw,returnSecureToken:true})});
   const d=await r.json(); if(!d.idToken) return false;
   fbAuthSave({id:d.idToken, rt:d.refreshToken, exp:Date.now()+(+d.expiresIn)*1000}); return true;
@@ -415,7 +420,7 @@ function applyRole(){
   document.querySelectorAll('.se-btn').forEach(e=>e.style.display=role==='se'?'':'none');
   renderLauncher();
 }
-function roleTap(){ if(role==='se'){ if(confirm('登出秘書處，切回會員檢視？')){ role='view'; sessionStorage.removeItem('jci-role'); fbAuthSave(null); applyRole(); goHome(); } } else showLogin(); }
+function roleTap(){ if(role==='se'){ if(confirm('登出秘書處，切回會員檢視？')){ role='view'; sessionStorage.removeItem('jci-role'); fbAuthSave(null); try{ const a=fbSdk(); if(a) a.signOut(); }catch(e){} applyRole(); goHome(); } } else showLogin(); }
 function showLogin(){ document.getElementById('pwErr').textContent=''; document.getElementById('pwInput').value=''; document.getElementById('loginModal').classList.add('on'); setTimeout(()=>document.getElementById('pwInput').focus(),80); }
 function closeLogin(){ document.getElementById('loginModal').classList.remove('on'); }
 async function doLogin(){
