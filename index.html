@@ -573,7 +573,7 @@ function closeKiosk(){ kioskOn=false; location.reload(); }
 function renderHeroLive(){
   const open=allEvents.filter(e=>!e.closed); const box=document.getElementById('heroLive');
   if(!box) return;
-  if(!open.length){ box.innerHTML=''; return; }
+  box.innerHTML=''; return;   // 2026-09-30 MAX「活動資訊也不要」：首頁不顯示進行中活動
   const e=open[0];
   const live=currentEvent&&currentEvent.id===e.id?gList().filter(g=>g.group==='Internal'):null;
   const cnt=live?`${live.filter(g=>g.arrived).length}/${live.length} 到場`:'進行中';
