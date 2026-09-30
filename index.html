@@ -878,6 +878,7 @@ function lineReturn(){
     if(res.status!=='success'){ lineLog('後端回 '+res.status+'：'+(res.message||'')); say((res.message||'LINE 登入失敗')+'<br><button class="btn small" style="margin-top:8px" onclick="lineStart()">重新用 LINE 登入</button>'); return; }
     localStorage.setItem('jci_sess',res.session); memList=null; memCard=null;
     if(res.members){ memList=res.members; memMe=res.me||null; labelsData=res.labels||{}; }
+    else { memMe=res.me||null; memApi('getMembers',memCreds()).then(r=>{ if(r.status==='success'){ memList=r.members||[]; memMe=r.me||memMe; labelsData=r.labels||{}; paintHero(); } }).catch(()=>{}); }  // 名單改背景抓，不卡登入
     if(res.card) memCard=res.card;
     // 登入已成功：之後畫面若出錯只記錄，不再誤報「連線失敗」
     try{ paintHero(); toast('✓ 已用 LINE 登入'); openMember(next); }catch(e){ lineLog('登入成功但畫面出錯：'+(e&&e.message)); }
