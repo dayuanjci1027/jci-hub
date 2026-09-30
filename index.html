@@ -859,7 +859,7 @@ function lineReturn(){
   const q=new URLSearchParams(location.search), code=q.get('code'), st=q.get('state');
   if(!code&&!q.get('error')) return;
   history.replaceState(null,'',location.pathname);
-  if(!code){ toast('已取消 LINE 登入'); return; }
+  if(!code){ lineLog('LINE 回傳錯誤：'+q.get('error')+' '+(q.get('error_description')||'')); toast('已取消 LINE 登入'); return; }
   // iPhone 從 LINE 跳回來常換分頁／瀏覽器，存的 state 可能不在：不在就照樣交給後端驗（後端向 LINE 換 token 才算數）；在但不符才擋
   let saved=null, next=''; try{ saved=localStorage.getItem('line_state'); next=localStorage.getItem('line_next')||''; localStorage.removeItem('line_state'); localStorage.removeItem('line_next'); }catch(e){}
   // 舊的 state 可能是上一次沒走完的登入留下的（LINE 常把回來的頁面開在另一個瀏覽器／分頁），不符也照樣交給後端驗：後端向 LINE 換得到身分才算數（MAX 2026-10-01 00:31「第一次登入都會顯示失敗」）
@@ -875,14 +875,18 @@ function lineReturn(){
   memApi('lineLogin',{code,redirectUri:LINE_BACK}).then(res=>{
     lineBusy=''; clearInterval(tick);
     if(res.status==='not_bound'){ goHome(); memPending=next; document.getElementById('memErr').textContent=res.message||''; document.getElementById('memModal').classList.add('on'); return; }
-    if(res.status!=='success'){ say((res.message||'LINE 登入失敗')+'<br><button class="btn small" style="margin-top:8px" onclick="lineStart()">重新用 LINE 登入</button>'); return; }
+    if(res.status!=='success'){ lineLog('後端回 '+res.status+'：'+(res.message||'')); say((res.message||'LINE 登入失敗')+'<br><button class="btn small" style="margin-top:8px" onclick="lineStart()">重新用 LINE 登入</button>'); return; }
     localStorage.setItem('jci_sess',res.session); memList=null; memCard=null;
     if(res.members){ memList=res.members; memMe=res.me||null; labelsData=res.labels||{}; }
     if(res.card) memCard=res.card;
-    paintHero(); toast('✓ 已用 LINE 登入');
-    openMember(next);
+    // 登入已成功：之後畫面若出錯只記錄，不再誤報「連線失敗」
+    try{ paintHero(); toast('✓ 已用 LINE 登入'); openMember(next); }catch(e){ lineLog('登入成功但畫面出錯：'+(e&&e.message)); }
     setTimeout(syncSheet,300);
-  }).catch(()=>{ lineBusy=''; clearInterval(tick); say('連線失敗<br><button class="btn small" style="margin-top:8px" onclick="lineStart()">重新用 LINE 登入</button>'); });
+  }).catch(e=>{ lineBusy=''; clearInterval(tick); lineLog('連線失敗：'+(e&&e.message||e)); say('連線失敗<br><button class="btn small" style="margin-top:8px" onclick="lineStart()">重新用 LINE 登入</button>'); });
+}
+// 網頁端失敗回報給後端，主管查得到原因（不含代碼）
+function lineLog(msg){
+  try{ fetch(MEM_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'lineClientLog',payload:{msg:String(msg).slice(0,200),ua:navigator.userAgent}})}).catch(()=>{}); }catch(e){}
 }
 // Google 後端偶發冷啟動失敗（回錯誤網頁或卡 20–30 秒）：讀取類 15 秒沒回就重打一次、錯誤網頁也重打一次；LINE 登入不中途放棄，只在失敗時重打一次
 function memApi(action,payload,retry){
