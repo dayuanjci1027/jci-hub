@@ -231,10 +231,13 @@ const perSheet = () => { const s = currentSpec(); return s.cols * s.rows; };
     const pw = ov.querySelector('#gatePw'), err = ov.querySelector('#gateErr');
     const tryEnter = () => {
       err.textContent = '驗證中…';
-      fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB_KEY, {
+      // 通行碼可設 4 碼：實際密碼＝'jci@'＋通行碼；舊長碼照樣能登（MAX 2026-10-04）
+      const code = pw.value.trim();
+      const signIn = p => fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB_KEY, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: EMAIL, password: pw.value.trim(), returnSecureToken: true })
-      }).then(r => r.json()).then(d => {
+        body: JSON.stringify({ email: EMAIL, password: p, returnSecureToken: true })
+      }).then(r => r.json());
+      signIn('jci@' + code).then(d => (d.idToken || code.length < 6) ? d : signIn(code)).then(d => {
         if (!d.idToken) { err.textContent = '通行碼錯誤'; pw.select(); return; }
         localStorage.setItem('jci-fb-auth', JSON.stringify({ id: d.idToken, rt: d.refreshToken, exp: Date.now() + (+d.expiresIn) * 1000 }));
         ov.remove();

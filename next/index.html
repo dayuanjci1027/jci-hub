@@ -301,7 +301,9 @@ async function fbToken(){
   const d=await r.json(); if(!d.id_token){ fbAuthSave(null); return ''; }
   a={id:d.id_token, rt:d.refresh_token, exp:Date.now()+(+d.expires_in)*1000}; fbAuthSave(a); return a.id;
 }
-async function fbSignIn(pw){
+// 秘書處通行碼可設 4 碼（MAX 2026-10-04「再新增一個可以自己決定改什麼碼的功能」「就4碼就好」）：Firebase 密碼至少 6 碼，實際密碼＝'jci@'＋通行碼；舊的長碼照樣能登
+async function fbSignIn(pw){ pw=String(pw||'').trim(); if(!pw) return false; if(await fbSignInRaw('jci@'+pw)) return true; return pw.length>=6 ? fbSignInRaw(pw) : false; }
+async function fbSignInRaw(pw){
   const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:SECRETARY_EMAIL,password:pw,returnSecureToken:true})});
   const d=await r.json(); if(!d.idToken) return false;
   fbAuthSave({id:d.idToken, rt:d.refreshToken, exp:Date.now()+(+d.expiresIn)*1000}); return true;
